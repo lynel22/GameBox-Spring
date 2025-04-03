@@ -28,7 +28,7 @@ public class EmailRealService implements EmailService{
             message.setSubject("Verificación de cuenta en GameBox");
             message.setText("Hola " + name + ",\n\n" +
                     "Gracias por registrarte en GameBox. Para activar tu cuenta, haz clic en el siguiente enlace:\n" +
-                    "http://" + host + "/verify?token=" + token + "\n\n" +
+                    "http://" + host + "/verify/account?token=" + token + "\n\n" +
                     "Si no te has registrado en GameBox, ignora este correo.\n\n" +
                     "Saludos,\nEl equipo de GameBox");
         }

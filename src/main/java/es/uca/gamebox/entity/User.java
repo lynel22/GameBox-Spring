@@ -12,8 +12,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -22,7 +26,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue
     @UuidGenerator
@@ -37,7 +41,11 @@ public class User {
     @NotNull
     private Boolean isAdmin;
     private String imageUrl;
-    private boolean isActive;
+
+    @Column(nullable = false)
+    private boolean enabled = false;
+    private String verificationToken;
+
 
     // Multifactor authentication
     private String QrCodeSecret;
@@ -50,4 +58,27 @@ public class User {
     @CreatedDate
     private LocalDateTime updatedAt;
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (this.isAdmin) {
+            return List.of(() -> "ROLE_ADMIN");
+        } else {
+            return List.of(() -> "ROLE_USER");
+        }
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.enabled;
+    }
 }

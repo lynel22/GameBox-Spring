@@ -1,6 +1,7 @@
 package es.uca.gamebox.service;
 
 import es.uca.gamebox.entity.User;
+import es.uca.gamebox.exception.ApiException;
 import es.uca.gamebox.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,30 +27,34 @@ public class UserService {
     public void createUser(String username, String password, String email) {
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
-            throw new RuntimeException("El email ya está registrado");
+            throw new ApiException("El email ya está registrado");
         }
-        // Hash the password
         String hashedPassword = passwordEncoder.encode(password);
 
-        // Create the user
         User user = new User();
         user.setUsername(username);
         user.setPassword(hashedPassword);
         user.setEmail(email);
         user.setIsAdmin(false);
-        user.setActive(false);
+        user.setEnabled(false);
+        String token = UUID.randomUUID().toString();
+        user.setVerificationToken(token);
         user.setQrCodeSecret(null);
         user.setQrCodeImageUri(null);
-
-
-        // Save the user to the database
 
         userRepository.save(user);
 
         // Send a verification email
-        String token = UUID.randomUUID().toString();
         emailService.sendNewAccountEmail(username, email, token);
 
         log.info("User created: {}", username);
+    }
+
+    public void verifyAccount(String token) {
+        User user = userRepository.findByVerificationToken(token).orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        user.setEnabled(true);
+        user.setVerificationToken(null); // Eliminamos el token tras la verificación
+        userRepository.save(user);
     }
 }
