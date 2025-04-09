@@ -12,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,9 +24,13 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<?> saveUser(@RequestBody User user) {
+    public ResponseEntity<?> saveUser(
+            @RequestParam("username") String username,
+            @RequestParam("email") String email,
+            @RequestParam("password") String password,
+            @RequestParam(value = "avatar", required = false) MultipartFile avatar) {
         try {
-            userService.createUser(user.getUsername(), user.getPassword(), user.getEmail());
+            userService.createUser(username, password, email, avatar);
             return ResponseEntity.ok("User created successfully");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error creating user: " + e.getMessage());
@@ -40,14 +45,18 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        try{
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+            );
 
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-        );
+            UserDetails user = (UserDetails) auth.getPrincipal();
+            String jwt = jwtService.generateToken(user);
 
-        UserDetails user = (UserDetails) auth.getPrincipal();
-        String jwt = jwtService.generateToken(user);
-
-        return ResponseEntity.ok(new JwtResponse(jwt));
+            return ResponseEntity.ok(new JwtResponse(jwt));
+        }
+        catch (Exception e){
+            return ResponseEntity.status(401).body("Invalid credentials");
+        }
     }
 }

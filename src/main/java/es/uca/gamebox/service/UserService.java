@@ -9,7 +9,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,16 +28,15 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public void createUser(String username, String password, String email) {
+    public void createUser(String username, String password, String email, MultipartFile avatar) {
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
             throw new ApiException("El email ya está registrado");
         }
-        String hashedPassword = passwordEncoder.encode(password);
 
         User user = new User();
         user.setUsername(username);
-        user.setPassword(hashedPassword);
+        user.setPassword(passwordEncoder.encode(password));
         user.setEmail(email);
         user.setIsAdmin(false);
         user.setEnabled(false);
@@ -40,6 +44,30 @@ public class UserService {
         user.setVerificationToken(token);
         user.setQrCodeSecret(null);
         user.setQrCodeImageUri(null);
+
+        if (avatar != null && !avatar.isEmpty()) {
+            // Crear ruta única para el avatar
+            String fileName = UUID.randomUUID() + "_" + avatar.getOriginalFilename();
+            Path uploadPath = Paths.get("src/main/resources/static/uploads/avatars");
+
+            if (!Files.exists(uploadPath)) {
+                try{
+                    Files.createDirectories(uploadPath);
+                } catch (Exception e) {
+                    throw new ApiException("Error al crear el directorio de subida: " + e.getMessage());
+                }
+            }
+
+            Path filePath = uploadPath.resolve(fileName);
+            try{
+                Files.copy(avatar.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            }
+            catch (Exception e){
+                throw new ApiException("Error al guardar el avatar: " + e.getMessage());
+            }
+
+            user.setImageUrl("/uploads/avatars/" + fileName);
+        }
 
         userRepository.save(user);
 
