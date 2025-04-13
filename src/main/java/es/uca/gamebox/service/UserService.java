@@ -33,6 +33,10 @@ public class UserService {
         if (existingUser.isPresent()) {
             throw new ApiException("El email ya está registrado");
         }
+        Optional<User> existingUsername = userRepository.findByUsername(username);
+        if (existingUsername.isPresent()) {
+            throw new ApiException("El nombre de usuario ya está en uso");
+        }
 
         User user = new User();
         user.setUsername(username);

@@ -29,6 +29,7 @@ public class User implements UserDetails {
     @UuidGenerator
     private UUID id;
     @NotNull
+    @Column(unique = true)
     private String username;
     @NotNull
     private String password;

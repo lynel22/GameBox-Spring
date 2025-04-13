@@ -1,14 +1,18 @@
 package es.uca.gamebox.controller;
 
 import es.uca.gamebox.entity.User;
+import es.uca.gamebox.exception.ApiException;
 import es.uca.gamebox.security.JwtResponse;
 import es.uca.gamebox.security.JwtService;
 import es.uca.gamebox.security.LoginRequest;
 import es.uca.gamebox.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -34,9 +38,13 @@ public class UserController {
         try {
             userService.createUser(username, password, email, avatar);
             return ResponseEntity.ok("User created successfully");
-        } catch (Exception e) {
+        } catch (ApiException e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body("Error creating user: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
 
@@ -59,10 +67,15 @@ public class UserController {
             String jwt = jwtService.generateToken(user);
 
             return ResponseEntity.ok(new JwtResponse(jwt));
-        }
-        catch (Exception e){
+        } catch (DisabledException e) {
+            log.warn("Login failed: account not activated");
+            return ResponseEntity.status(403).body("Tu cuenta no está activada. Por favor revisa tu correo para activarla.");
+        } catch (BadCredentialsException e) {
+            log.warn("Login failed: bad credentials");
+            return ResponseEntity.status(401).body("Correo o contraseña incorrectos.");
+        } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(401).body("Invalid credentials");
+            return ResponseEntity.status(500).body("Ha ocurrido un error inesperado.");
         }
     }
 }
