@@ -6,6 +6,7 @@ import es.uca.gamebox.security.JwtService;
 import es.uca.gamebox.security.LoginRequest;
 import es.uca.gamebox.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = {"/user"})
@@ -33,6 +35,7 @@ public class UserController {
             userService.createUser(username, password, email, avatar);
             return ResponseEntity.ok("User created successfully");
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).body("Error creating user: " + e.getMessage());
         }
     }
@@ -46,6 +49,8 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try{
+            log.info("Login attempt for user: " + loginRequest.getUsername() + " with password: " + loginRequest.getPassword());
+
             Authentication auth = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
             );
@@ -56,6 +61,7 @@ public class UserController {
             return ResponseEntity.ok(new JwtResponse(jwt));
         }
         catch (Exception e){
+            e.printStackTrace();
             return ResponseEntity.status(401).body("Invalid credentials");
         }
     }
