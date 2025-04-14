@@ -50,6 +50,7 @@ public class UserController {
 
     @GetMapping("/verify/account")
     public ResponseEntity<?> verifyAccount(@RequestParam("token") String token) {
+        System.out.println("Token recibido: " + token);
         userService.verifyAccount(token);
         return ResponseEntity.ok("Account verified successfully");
     }
@@ -76,6 +77,37 @@ public class UserController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Ha ocurrido un error inesperado.");
+        }
+    }
+
+    @PostMapping("/verify/password")
+    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
+        try {
+            userService.forgotPassword(email);
+            return ResponseEntity.ok("Password reset email sent successfully");
+        } catch (ApiException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+        }
+
+    }
+
+    @PostMapping("/verify/password/submit")
+    public ResponseEntity<?> resetPassword(@RequestParam("token") String token,
+                                           @RequestParam("password") String password)
+    {
+        try {
+            userService.resetPassword(token, password);
+            return ResponseEntity.ok("Password reset successfully");
+        } catch (ApiException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
 }

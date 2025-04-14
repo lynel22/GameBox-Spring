@@ -43,6 +43,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean enabled = false;
     private String verificationToken;
+    private String passwordResetToken;
 
 
     // Multifactor authentication
@@ -70,6 +71,10 @@ public class User implements UserDetails {
         } else {
             return List.of(() -> "ROLE_USER");
         }
+    }
+
+    public String getName() {
+        return this.username;
     }
 
     @Override

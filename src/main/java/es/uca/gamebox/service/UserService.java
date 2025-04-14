@@ -88,4 +88,26 @@ public class UserService {
         user.setVerificationToken(null); // Eliminamos el token tras la verificación
         userRepository.save(user);
     }
+
+    public void forgotPassword(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ApiException("Email not found"));
+
+        String token = UUID.randomUUID().toString();
+        user.setPasswordResetToken(token);
+        userRepository.save(user);
+
+        emailService.sendPasswordResetEmail(user.getName(), email, token);
+    }
+
+    public void resetPassword(String token, String password) {
+        User user = userRepository.findByPasswordResetToken(token).orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        if (user.isEnabled()) {
+            user.setPassword(passwordEncoder.encode(password));
+            user.setPasswordResetToken(null); // Eliminamos el token tras el restablecimiento
+            userRepository.save(user);
+        } else {
+            throw new ApiException("La cuenta no está activada. Por favor, activa tu cuenta antes de restablecer la contraseña.");
+        }
+    }
 }
