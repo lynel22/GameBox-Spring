@@ -1,5 +1,10 @@
 package es.uca.gamebox.security;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class JwtResponse {
     private String token;
 
@@ -7,7 +12,6 @@ public class JwtResponse {
         this.token = token;
     }
 
-    public String getToken() {
-        return token;
-    }
+    public JwtResponse(){}
+
 }

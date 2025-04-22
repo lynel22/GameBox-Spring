@@ -59,6 +59,7 @@ public class SecurityConfiguration {
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) throws Exception {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
         return new ProviderManager(authProvider);
     }
 

@@ -1,6 +1,8 @@
 package es.uca.gamebox.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -32,23 +34,31 @@ public class User implements UserDetails {
     @Column(unique = true)
     private String username;
     @NotNull
+    @JsonIgnore
+    @Setter
+    @Getter(onMethod = @__({@JsonIgnore}))
     private String password;
     @NotNull
     @Column(unique = true)
     private String email;
     @NotNull
+    @Getter(onMethod = @__({@JsonIgnore}))
     private Boolean isAdmin;
     private String imageUrl;
 
+
     @Column(nullable = false)
     private boolean enabled = false;
+    @Getter(onMethod = @__({@JsonIgnore}))
     private String verificationToken;
+    @Getter(onMethod = @__({@JsonIgnore}))
     private String passwordResetToken;
 
-
     // Multifactor authentication
+    @Getter(onMethod = @__({@JsonIgnore}))
     private String QrCodeSecret;
     @Column(columnDefinition = "TEXT")
+    @Getter(onMethod = @__({@JsonIgnore}))
     private String QrCodeImageUri;
 
     @NotNull
@@ -73,10 +83,12 @@ public class User implements UserDetails {
         }
     }
 
-    public String getName() {
+    @JsonProperty("username")
+    public String getRealUserName() {
         return this.username;
     }
 
+    @JsonIgnore
     @Override
     public String getUsername() {
         return this.email;
