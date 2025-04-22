@@ -47,7 +47,8 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/user/login", "/user/register",
-                                "/user/verify/account", "/user/verify/password", "/user/verify/password/submit").permitAll()
+                                "/user/verify/account", "/user/verify/password",
+                                "/user/verify/password/submit", "/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
