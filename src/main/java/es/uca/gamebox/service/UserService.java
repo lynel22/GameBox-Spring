@@ -50,34 +50,23 @@ public class UserService {
         user.setQrCodeImageUri(null);
 
         if (avatar != null && !avatar.isEmpty()) {
-            // Crear ruta única para el avatar
             storeImg(user, avatar);
         }
 
         userRepository.save(user);
-
-        // Send a verification email
         emailService.sendNewAccountEmail(username, email, token);
-
         log.info("User created: {}", username);
     }
 
     public void updateUser(User user, String username, String password, String email, MultipartFile avatar) {
-        if (username != null){
-            user.setUsername(username);
-        }
-        if (password != null){
-            user.setPassword(passwordEncoder.encode(password));
-        }
-        if (email != null){
-            user.setEmail(email);
-        }
+        if (username != null) user.setUsername(username);
+        if (password != null) user.setPassword(passwordEncoder.encode(password));
+        if (email != null) user.setEmail(email);
 
         if (avatar != null && !avatar.isEmpty()) {
-            // Eliminar el avatar anterior si existe
             if (user.getImageUrl() != null) {
                 try {
-                    Path oldAvatarPath = Paths.get("src/main/resources/static" + user.getImageUrl());
+                    Path oldAvatarPath = Paths.get("uploads", "avatars", Paths.get(user.getImageUrl()).getFileName().toString());
                     Files.deleteIfExists(oldAvatarPath);
                 } catch (Exception e) {
                     throw new ApiException("Error al eliminar el avatar anterior: " + e.getMessage());
@@ -92,25 +81,19 @@ public class UserService {
 
     private void storeImg(User user, MultipartFile avatar) {
         String fileName = UUID.randomUUID() + "_" + avatar.getOriginalFilename();
-        Path uploadPath = Paths.get("src/main/resources/static/uploads/avatars");
+        Path uploadPath = Paths.get("uploads", "avatars");
 
-        if (!Files.exists(uploadPath)) {
-            try{
+        try {
+            if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
-            } catch (Exception e) {
-                throw new ApiException("Error al crear el directorio de subida: " + e.getMessage());
             }
-        }
 
-        Path filePath = uploadPath.resolve(fileName);
-        try{
+            Path filePath = uploadPath.resolve(fileName);
             Files.copy(avatar.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-        }
-        catch (Exception e){
+            user.setImageUrl("/uploads/avatars/" + fileName); // Ruta accesible públicamente
+        } catch (Exception e) {
             throw new ApiException("Error al guardar el avatar: " + e.getMessage());
         }
-
-        user.setImageUrl("/uploads/avatars/" + fileName);
     }
 
     public void verifyAccount(String token) {

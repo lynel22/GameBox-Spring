@@ -33,7 +33,10 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         // Ignorar login y registro
-        if (path.equals("/user/login") || path.equals("/user/register") || path.equals("/user/verify/account")) {
+        if (path.startsWith("/uploads/") ||
+                path.equals("/user/login") ||
+                path.equals("/user/register") ||
+                path.equals("/user/verify/account")) {
             filterChain.doFilter(request, response);
             return;
         }

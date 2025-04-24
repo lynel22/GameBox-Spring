@@ -143,8 +143,8 @@ public class UserController {
             Authentication authentication,
             @RequestParam("username") String username,
             @RequestParam("email") String email,
-            @RequestParam("password") String password,
-            @RequestParam(value = "avatar", required = false) MultipartFile avatar) {
+            @RequestParam(value="password", required = false) String password,
+            @RequestParam(value ="avatar", required = false) MultipartFile avatar) {
 
         try {
             User user = (User) authentication.getPrincipal();
