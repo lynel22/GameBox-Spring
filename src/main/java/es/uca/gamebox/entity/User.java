@@ -61,6 +61,10 @@ public class User implements UserDetails {
     @Getter(onMethod = @__({@JsonIgnore}))
     private String QrCodeImageUri;
 
+    @OneToMany
+    @JoinColumn(name = "user_id")
+    List<Library> libraries;
+
     @NotNull
     @CreatedDate
     private LocalDateTime createdAt;
