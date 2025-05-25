@@ -65,6 +65,9 @@ public class User implements UserDetails {
     @JoinColumn(name = "user_id")
     List<Library> libraries;
 
+    @Column(name = "steam_id", unique = true)
+    private String steamId;
+
     @NotNull
     @CreatedDate
     private LocalDateTime createdAt;
@@ -106,5 +109,20 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return this.enabled;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        return email.equals(user.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return email.hashCode();
     }
 }

@@ -126,5 +126,11 @@ public class UserService {
         }
     }
 
+    public void saveSteamId(UUID userId, String steamId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new ApiException("User not found"));
+        user.setSteamId(steamId);
+        userRepository.save(user);
+    }
+
 
 }

@@ -53,13 +53,21 @@ public class JwtFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
         username = jwtService.extractUsername(jwt);
 
+        System.out.println("Authorization header: " + authHeader);
+        System.out.println("JWT extraído: " + jwt);
+        System.out.println("Username (email) extraído del token: " + username);
+        System.out.println("¿Usuario autenticado en contexto?: " + (SecurityContextHolder.getContext().getAuthentication() != null));
+
+
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                System.out.println("Estableciendo autenticación con: " + userDetails.getUsername());
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("Autenticación establecida: " + SecurityContextHolder.getContext().getAuthentication());
             }
         }
 

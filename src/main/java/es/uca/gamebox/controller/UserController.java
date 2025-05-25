@@ -1,25 +1,31 @@
 package es.uca.gamebox.controller;
 
+import es.uca.gamebox.dto.UserDTO;
 import es.uca.gamebox.entity.User;
 import es.uca.gamebox.exception.ApiException;
 import es.uca.gamebox.security.JwtResponse;
 import es.uca.gamebox.security.JwtService;
 import es.uca.gamebox.security.LoginRequest;
 import es.uca.gamebox.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -134,8 +140,7 @@ public class UserController {
         }
         System.out.println("Getteando user");
         User user = (User) authentication.getPrincipal();
-
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(new UserDTO(user));
     }
 
     @PostMapping("profile/update")
@@ -160,6 +165,42 @@ public class UserController {
         }
 
 
+    }
+
+    @PostMapping("/auth/steam/verify")
+    public ResponseEntity<?> verifySteamLogin(
+            @RequestBody Map<String, String> formParams,
+            Authentication authentication
+    ) {
+        System.out.println("✅ Verificando Steam login...");
+
+        formParams.put("openid.mode", "check_authentication");
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED); // porque Steam lo quiere así
+
+        MultiValueMap<String, String> steamParams = new LinkedMultiValueMap<>();
+        steamParams.setAll(formParams);
+
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(steamParams, headers);
+        String response = restTemplate.postForObject(
+                "https://steamcommunity.com/openid/login",
+                entity,
+                String.class
+        );
+
+        if (response != null && response.contains("is_valid:true")) {
+            String claimedId = formParams.get("openid.claimed_id");
+            String steamId = claimedId.substring(claimedId.lastIndexOf("/") + 1);
+
+            User user = (User) authentication.getPrincipal();
+            userService.saveSteamId(user.getId(), steamId);
+
+            return ResponseEntity.ok("Steam ID vinculado: " + steamId);
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Verificación fallida");
     }
 
 }
