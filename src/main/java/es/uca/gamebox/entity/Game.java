@@ -38,6 +38,8 @@ public class Game {
     @JoinColumn(name = "developer_id")
     private Developer developer;
 
+    private String steamAppId;
+
     @ManyToMany
     @JoinTable(
             name = "game_genre",
