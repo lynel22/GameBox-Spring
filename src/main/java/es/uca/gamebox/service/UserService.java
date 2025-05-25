@@ -133,4 +133,10 @@ public class UserService {
     }
 
 
+    public void unlinkSteamAccount(UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new ApiException("User not found"));
+        user.setSteamId(null);
+        userRepository.save(user);
+        log.info("Steam account unlinked for user: {}", user.getUsername());
+    }
 }

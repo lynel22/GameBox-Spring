@@ -203,4 +203,16 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Verificación fallida");
     }
 
+    @PutMapping("/auth/steam/unlink")
+    public ResponseEntity<?> unlinkSteamAccount(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
+        }
+
+        User user = (User) authentication.getPrincipal();
+        userService.unlinkSteamAccount(user.getId());
+
+        return ResponseEntity.ok("Steam account unlinked successfully");
+    }
+
 }

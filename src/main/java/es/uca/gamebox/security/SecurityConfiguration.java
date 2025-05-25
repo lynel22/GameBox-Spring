@@ -52,7 +52,7 @@ public class SecurityConfiguration {
                                 "/user/verify/account", "/user/verify/password",
                                 "/user/verify/password/submit").permitAll()
                         .requestMatchers("/user/profile/update").authenticated()
-                        .requestMatchers("/user/auth/steam/verify").authenticated()
+                        .requestMatchers("/user/auth/steam/verify", "user/auth/steam/unlink").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
