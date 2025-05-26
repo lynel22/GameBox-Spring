@@ -8,5 +8,5 @@ import java.util.List;
 @Service
 public interface GameLibrarySyncService {
 
-    List<Game> syncLibrary(String userId);
+    void syncLibrary(String userId);
 }

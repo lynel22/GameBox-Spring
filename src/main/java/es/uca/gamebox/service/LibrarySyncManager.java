@@ -19,11 +19,11 @@ public class LibrarySyncManager {
                 .collect(Collectors.toMap(s -> s.getClass().getAnnotation(Service.class).value(), s -> s));
     }
 
-    public List<Game> sync(String platform, String userId) {
+    public void sync(String platform, String userId) {
         GameLibrarySyncService service = services.get(platform);
         if (service == null) {
             throw new UnsupportedOperationException("Platform not supported: " + platform);
         }
-        return service.syncLibrary(userId);
+        service.syncLibrary(userId);
     }
 }

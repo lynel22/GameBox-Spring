@@ -1,11 +1,17 @@
 package es.uca.gamebox.client;
 
+import es.uca.gamebox.dto.SteamFriendsResponse;
+import es.uca.gamebox.dto.Friend;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class SteamApiClient {
@@ -29,4 +35,23 @@ public class SteamApiClient {
                 .map(game -> ((Number) game.get("appid")).toString())
                 .toList();
     }
+
+    public List<String> getFriendsSteamIds(String steamId) {
+        String url = String.format("http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key=%s&steamid=%s&relationship=friend", apiKey, steamId);
+
+        ResponseEntity<SteamFriendsResponse> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<SteamFriendsResponse>() {}
+        );
+
+        if (response.getBody() != null && response.getBody().getFriendslist() != null) {
+            return response.getBody().getFriendslist().getFriends().stream()
+                    .map(Friend::getSteamid)
+                    .collect(Collectors.toList());
+        }
+        return List.of();
+    }
+
 }
