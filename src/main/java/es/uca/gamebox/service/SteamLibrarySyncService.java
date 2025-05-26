@@ -27,6 +27,6 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
     @Override
     public List<Game> syncLibrary(String steamId) {
         List<String> appIds = steamApiClient.getOwnedGameAppIds(steamId);
-        return gameRepository.findByAppIdIn(appIds);
+        return gameRepository.findBySteamAppIdIn(appIds);
     }
 }

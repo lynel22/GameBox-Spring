@@ -11,5 +11,5 @@ import java.util.UUID;
 @Repository
 public interface GameRepository extends JpaRepository<Game, UUID> {
     Optional<Game> findByName(String name);
-    List<Game> findByAppIdIn(List<String> appIds);
+    List<Game> findBySteamAppIdIn(List<String> appIds);
 }
