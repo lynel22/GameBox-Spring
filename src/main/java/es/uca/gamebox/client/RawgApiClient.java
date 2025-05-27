@@ -28,6 +28,7 @@ public class RawgApiClient {
                 .queryParam("key", apiKey)
                 .queryParam("page", page)
                 .queryParam("page_size", pageSize)
+                .queryParam("ordering", "released")
                 .toUriString();
 
         return restTemplate.getForObject(url, RawgGamesResponse.class);
