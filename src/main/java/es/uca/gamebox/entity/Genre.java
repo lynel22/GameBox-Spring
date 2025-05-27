@@ -19,6 +19,11 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 public class Genre {
+
+    public Genre(String name) {
+        this.name = name;
+    }
+
     @Id
     @GeneratedValue
     @UuidGenerator

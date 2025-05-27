@@ -48,6 +48,10 @@ public class Game {
     )
     List<Genre> genres;
 
+    @Column(unique = true)
+    private String rawgSlug;
+
+
     @NotNull
     @CreatedDate
     private LocalDateTime createdAt;

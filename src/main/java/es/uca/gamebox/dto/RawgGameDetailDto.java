@@ -13,6 +13,6 @@ public class RawgGameDetailDto {
     private String background_image;
     private List<RawgPlatformDto> platforms;
     private List<RawgGenreDto> genres;
-
+    private List<RawgStoreInfoDto> stores;
     // Getters and setters
 }
