@@ -1,4 +1,4 @@
-package es.uca.gamebox.client;
+package es.uca.gamebox.component.client;
 
 
 
@@ -18,6 +18,7 @@ public class RawgApiClient {
     private String apiKey;
 
     private static final String BASE_URL = "https://api.rawg.io/api";
+    private static final String DEFAULT_LANG = "es";
 
     public RawgApiClient() {
         this.restTemplate = new RestTemplate();
@@ -28,7 +29,8 @@ public class RawgApiClient {
                 .queryParam("key", apiKey)
                 .queryParam("page", page)
                 .queryParam("page_size", pageSize)
-                .queryParam("ordering", "released")
+                .queryParam("ordering", "added")
+                .queryParam("lang", DEFAULT_LANG)
                 .toUriString();
 
         return restTemplate.getForObject(url, RawgGamesResponse.class);
@@ -37,6 +39,7 @@ public class RawgApiClient {
     public RawgGameDetailDto getGameDetails(String slug) {
         String url = UriComponentsBuilder.fromHttpUrl(BASE_URL + "/games/{slug}")
                 .queryParam("key", apiKey)
+                .queryParam("lang", DEFAULT_LANG)
                 .buildAndExpand(slug)
                 .toUriString();
 

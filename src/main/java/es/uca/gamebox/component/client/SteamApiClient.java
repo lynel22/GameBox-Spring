@@ -1,4 +1,4 @@
-package es.uca.gamebox.client;
+package es.uca.gamebox.component.client;
 
 import es.uca.gamebox.dto.SteamFriendsResponse;
 import es.uca.gamebox.dto.Friend;

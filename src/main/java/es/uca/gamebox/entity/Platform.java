@@ -22,6 +22,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @Entity
 public class Platform {
+
+    public Platform(String name){this.name=name;}
+
     @Id
     @GeneratedValue
     @UuidGenerator

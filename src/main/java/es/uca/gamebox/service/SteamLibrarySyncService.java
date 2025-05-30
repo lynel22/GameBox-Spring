@@ -1,7 +1,6 @@
 package es.uca.gamebox.service;
 
-import es.uca.gamebox.client.SteamApiClient;
-import es.uca.gamebox.dto.SteamOwnedGamesResponseDTO;
+import es.uca.gamebox.component.client.SteamApiClient;
 import es.uca.gamebox.entity.Game;
 import es.uca.gamebox.entity.User;
 import es.uca.gamebox.repository.GameRepository;
@@ -10,12 +9,10 @@ import es.uca.gamebox.security.AuthenticatedUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service("steam")
 public class SteamLibrarySyncService implements GameLibrarySyncService{

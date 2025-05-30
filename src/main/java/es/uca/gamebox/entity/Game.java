@@ -30,9 +30,10 @@ public class Game {
     @NotNull
     private String name;
     @NotNull
+    @Lob
     private String description;
     private String imageUrl;
-    @NotNull
+
     private String releaseDate;
     @ManyToOne
     @JoinColumn(name = "developer_id")
@@ -47,6 +48,14 @@ public class Game {
             inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
     List<Genre> genres;
+
+    @ManyToMany
+    @JoinTable(
+            name = "game_platform",
+            joinColumns = @JoinColumn(name = "game_id"),
+            inverseJoinColumns = @JoinColumn(name = "platform_id")
+    )
+    List<Platform> platforms;
 
     @Column(unique = true)
     private String rawgSlug;
