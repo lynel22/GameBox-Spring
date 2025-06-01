@@ -14,4 +14,5 @@ public class RawgGameDetailDto {
     private List<RawgPlatformDto> platforms;
     private List<RawgGenreDto> genres;
     private List<RawgStoreInfoDto> stores;
+    private List<RawgDeveloperDto> developers;
 }

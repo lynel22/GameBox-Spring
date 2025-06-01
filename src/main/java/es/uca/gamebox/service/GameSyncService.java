@@ -5,13 +5,16 @@ import es.uca.gamebox.component.client.RawgApiClient;
 import es.uca.gamebox.dto.RawgGameDetailDto;
 import es.uca.gamebox.dto.RawgGameSummaryDto;
 import es.uca.gamebox.dto.RawgGamesResponse;
+import es.uca.gamebox.entity.Developer;
 import es.uca.gamebox.entity.Game;
 import es.uca.gamebox.entity.Genre;
 import es.uca.gamebox.entity.Platform;
+import es.uca.gamebox.repository.DeveloperRepository;
 import es.uca.gamebox.repository.GameRepository;
 import es.uca.gamebox.repository.GenreRepository;
 import es.uca.gamebox.repository.PlatformRepository;
 import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,14 +33,15 @@ public class GameSyncService {
     private final RawgApiClient rawgApiClient;
     private final GameRepository gameRepository;
     private final GenreRepository genreRepository;
+    private final DeveloperRepository developerRepository;
     private final PlatformRepository platformRepository;
     private final SyncPageTracker syncPageTracker;
 
     @PostConstruct
     public void init() {
         int currentPage = syncPageTracker.getLastSyncedPage();
-        int pagesToFetch = 3; // Puedes ajustar este número
-        int pageSize = 20;
+        int pagesToFetch = 2; // Puedes ajustar este número
+        int pageSize = 5;
 
         for (int i = 0; i < pagesToFetch; i++) {
             syncGames(currentPage + i, pageSize);
@@ -47,6 +51,7 @@ public class GameSyncService {
         syncPageTracker.saveLastSyncedPage(currentPage + pagesToFetch);
     }
 
+    @Transactional
     public void syncGames(int page, int pageSize) {
         RawgGamesResponse response = rawgApiClient.getGames(page, pageSize);
         if (response == null || response.getResults() == null) return;
@@ -86,16 +91,26 @@ public class GameSyncService {
                 game.setGenres(genres);
             }
 
+            // Sincronizar desarrollador
+            if (detail.getDevelopers() != null && !detail.getDevelopers().isEmpty()) {
+                String developerName = detail.getDevelopers().get(0).getName();
+                Developer developer = developerRepository.findByNameIgnoreCase(developerName)
+                        .orElseGet(() -> developerRepository.save(new Developer(developerName)));
+                game.setDeveloper(developer);
+            }
+
             // Sincronizar plataformas
             if (detail.getPlatforms() != null) {
                 List<Platform> platforms = detail.getPlatforms().stream()
                         .map(rawgPlatform -> {
                             try {
                                 String platformName = rawgPlatform.getPlatform().getName();
+                                System.out.println("Plataforma: " + platformName);
                                 return platformRepository.findByNameIgnoreCase(platformName)
                                         .orElseGet(() -> platformRepository.save(new Platform(platformName)));
                             } catch (Exception e) {
                                 log.warn("No se pudo guardar la plataforma: {}", e.getMessage());
+                                e.printStackTrace();
                                 return null;
                             }
                         })
@@ -118,6 +133,7 @@ public class GameSyncService {
                 .filter(store -> store.getStore().getSlug().equals("steam"))
                 .map(store -> {
                     String url = store.getUrl();
+                    System.out.println("URL de Steam: " + url);
                     try {
                         String[] parts = url.split("app/");
                         if (parts.length > 1) {

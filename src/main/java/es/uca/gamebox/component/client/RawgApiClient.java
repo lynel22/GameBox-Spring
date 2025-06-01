@@ -29,7 +29,7 @@ public class RawgApiClient {
                 .queryParam("key", apiKey)
                 .queryParam("page", page)
                 .queryParam("page_size", pageSize)
-                .queryParam("ordering", "added")
+                .queryParam("ordering", "-added")
                 .queryParam("lang", DEFAULT_LANG)
                 .toUriString();
 

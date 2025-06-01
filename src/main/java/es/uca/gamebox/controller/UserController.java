@@ -1,13 +1,12 @@
 package es.uca.gamebox.controller;
 
-import es.uca.gamebox.dto.UserDTO;
+import es.uca.gamebox.dto.UserDto;
 import es.uca.gamebox.entity.User;
 import es.uca.gamebox.exception.ApiException;
 import es.uca.gamebox.security.JwtResponse;
 import es.uca.gamebox.security.JwtService;
 import es.uca.gamebox.security.LoginRequest;
 import es.uca.gamebox.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -140,7 +138,7 @@ public class UserController {
         }
         System.out.println("Getteando user");
         User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(new UserDTO(user));
+        return ResponseEntity.ok(new UserDto(user));
     }
 
     @PostMapping("profile/update")

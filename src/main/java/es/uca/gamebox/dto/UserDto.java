@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Getter
 @Setter
-public class UserDTO {
+public class UserDto {
     private UUID id;
     private String username;
     private String email;
@@ -19,7 +19,7 @@ public class UserDTO {
     private int level; // si lo tienes calculado en algún sitio
     private String title; // lo mismo
 
-    public UserDTO(User user) {
+    public UserDto(User user) {
         this.id = user.getId();
         this.username = user.getRealUserName(); // usa el getter mapeado
         this.email = user.getEmail();

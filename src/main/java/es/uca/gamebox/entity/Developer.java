@@ -22,6 +22,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Developer {
+
+    public Developer(String name) {
+        this.name = name;
+    }
+
     @Id
     @GeneratedValue
     @UuidGenerator

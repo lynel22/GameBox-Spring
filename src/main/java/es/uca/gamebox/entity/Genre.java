@@ -32,6 +32,8 @@ public class Genre {
     @NotNull
     private String name;
 
+    private String spanishName;
+
     @ManyToMany
     @JoinTable(
             name = "game_genre",
