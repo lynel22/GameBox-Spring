@@ -2,6 +2,7 @@ package es.uca.gamebox.component.client;
 
 
 
+import es.uca.gamebox.dto.RawgAchievementResponse;
 import es.uca.gamebox.dto.RawgGameDetailDto;
 import es.uca.gamebox.dto.RawgGamesResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,5 +45,15 @@ public class RawgApiClient {
                 .toUriString();
 
         return restTemplate.getForObject(url, RawgGameDetailDto.class);
+    }
+
+    public RawgAchievementResponse getAchievementsForGame(String slug) {
+        String url = UriComponentsBuilder.fromHttpUrl(BASE_URL + "/games/{slug}/achievements")
+                .queryParam("key", apiKey)
+                .queryParam("lang", DEFAULT_LANG)
+                .buildAndExpand(slug)
+                .toUriString();
+
+        return restTemplate.getForObject(url, RawgAchievementResponse.class);
     }
 }

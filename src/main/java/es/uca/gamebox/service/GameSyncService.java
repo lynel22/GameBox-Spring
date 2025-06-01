@@ -2,22 +2,15 @@ package es.uca.gamebox.service;
 
 import es.uca.gamebox.component.SyncPageTracker;
 import es.uca.gamebox.component.client.RawgApiClient;
-import es.uca.gamebox.dto.RawgGameDetailDto;
-import es.uca.gamebox.dto.RawgGameSummaryDto;
-import es.uca.gamebox.dto.RawgGamesResponse;
-import es.uca.gamebox.entity.Developer;
-import es.uca.gamebox.entity.Game;
-import es.uca.gamebox.entity.Genre;
-import es.uca.gamebox.entity.Platform;
-import es.uca.gamebox.repository.DeveloperRepository;
-import es.uca.gamebox.repository.GameRepository;
-import es.uca.gamebox.repository.GenreRepository;
-import es.uca.gamebox.repository.PlatformRepository;
+import es.uca.gamebox.dto.*;
+import es.uca.gamebox.entity.*;
+import es.uca.gamebox.repository.*;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import es.uca.gamebox.dto.RawgAchievementResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,6 +28,7 @@ public class GameSyncService {
     private final GenreRepository genreRepository;
     private final DeveloperRepository developerRepository;
     private final PlatformRepository platformRepository;
+    private final AchievementRepository achievementRepository;
     private final SyncPageTracker syncPageTracker;
 
     @PostConstruct
@@ -120,6 +114,21 @@ public class GameSyncService {
             }
 
             gameRepository.save(game);
+
+            RawgAchievementResponse achievementResponse = rawgApiClient.getAchievementsForGame(detail.getSlug());
+            if (achievementResponse != null && achievementResponse.getResults() != null) {
+                for (RawgAchievementDto rawgAchievement : achievementResponse.getResults()) {
+                    Achievement achievement = new Achievement();
+                    achievement.setGame(game);
+                    achievement.setName(rawgAchievement.getName());
+                    achievement.setDescription(rawgAchievement.getDescription());
+                    achievement.setImageUrl(rawgAchievement.getImage());
+                    achievement.setCreatedAt(LocalDateTime.now());
+                    achievement.setUpdatedAt(LocalDateTime.now());
+                    achievementRepository.save(achievement);
+                }
+            }
+
         }
     }
 
