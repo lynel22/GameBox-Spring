@@ -2,10 +2,7 @@ package es.uca.gamebox.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,6 +33,7 @@ public class Achievement {
     private String name;
 
     @NotNull
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     private String imageUrl;
