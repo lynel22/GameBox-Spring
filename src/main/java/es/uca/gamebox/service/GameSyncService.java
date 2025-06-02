@@ -2,7 +2,7 @@ package es.uca.gamebox.service;
 
 import es.uca.gamebox.component.SyncPageTracker;
 import es.uca.gamebox.component.client.RawgApiClient;
-import es.uca.gamebox.dto.*;
+import es.uca.gamebox.dto.rawg.*;
 import es.uca.gamebox.entity.*;
 import es.uca.gamebox.repository.*;
 import jakarta.annotation.PostConstruct;
@@ -10,12 +10,13 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import es.uca.gamebox.dto.RawgAchievementResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,8 +35,8 @@ public class GameSyncService {
     @PostConstruct
     public void init() {
         int currentPage = syncPageTracker.getLastSyncedPage();
-        int pagesToFetch = 2; // Puedes ajustar este número
-        int pageSize = 5;
+        int pagesToFetch = 4; // Puedes ajustar este número
+        int pageSize = 40;
 
         for (int i = 0; i < pagesToFetch; i++) {
             syncGames(currentPage + i, pageSize);
@@ -63,7 +64,7 @@ public class GameSyncService {
             game.setImageUrl(detail.getBackground_image());
             log.info("Título: {}, Released: {}", detail.getName(), detail.getReleased());
             game.setReleaseDate(detail.getReleased());
-            game.setSteamAppId(extractSteamAppId(detail));
+            game.setSteamAppId(extractSteamAppId(detail.getSlug()));
             game.setRawgSlug(detail.getSlug());
             game.setCreatedAt(LocalDateTime.now());
             game.setUpdatedAt(LocalDateTime.now());
@@ -136,23 +137,22 @@ public class GameSyncService {
         return html != null ? html.replaceAll("<[^>]*>", "").trim() : "";
     }
 
-    private String extractSteamAppId(RawgGameDetailDto detail) {
-        if (detail.getStores() == null) return null;
-        return detail.getStores().stream()
-                .filter(store -> store.getStore().getSlug().equals("steam"))
-                .map(store -> {
-                    String url = store.getUrl();
-                    System.out.println("URL de Steam: " + url);
-                    try {
-                        String[] parts = url.split("app/");
-                        if (parts.length > 1) {
-                            return parts[1].split("/")[0];
-                        }
-                    } catch (Exception ignored) {}
-                    return null;
-                })
-                .filter(id -> id != null && !id.isEmpty())
-                .findFirst()
-                .orElse(null);
+    public String extractSteamAppId(String slug) {
+        RawgStoresResponseDto storesResponse = rawgApiClient.getGameStores(slug);
+
+        if (storesResponse == null || storesResponse.getResults() == null) return null;
+
+        for (RawgGameStoreEntryDto entry : storesResponse.getResults()) {
+            String url = entry.getUrl();
+            if (url != null && url.contains("store.steampowered.com")) {
+                Pattern pattern = Pattern.compile("store\\.steampowered\\.com/app/(\\d+)");
+                Matcher matcher = pattern.matcher(url);
+                if (matcher.find()) {
+                    return matcher.group(1);
+                }
+            }
+        }
+
+        return null;
     }
 }

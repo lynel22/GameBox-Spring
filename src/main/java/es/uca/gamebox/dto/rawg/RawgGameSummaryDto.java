@@ -1,4 +1,4 @@
-package es.uca.gamebox.dto;
+package es.uca.gamebox.dto.rawg;
 
 import lombok.Data;
 

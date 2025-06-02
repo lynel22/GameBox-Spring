@@ -1,4 +1,4 @@
-package es.uca.gamebox.dto;
+package es.uca.gamebox.dto.rawg;
 
 import lombok.Data;
 
@@ -13,6 +13,6 @@ public class RawgGameDetailDto {
     private String background_image;
     private List<RawgPlatformDto> platforms;
     private List<RawgGenreDto> genres;
-    private List<RawgStoreInfoDto> stores;
+    /*private List<RawgStoreInfoDto> stores;*/
     private List<RawgDeveloperDto> developers;
 }
