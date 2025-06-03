@@ -32,7 +32,7 @@ public class GameSyncService {
     private final AchievementRepository achievementRepository;
     private final SyncPageTracker syncPageTracker;
 
-    @PostConstruct
+    /*@PostConstruct*/
     public void init() {
         int currentPage = syncPageTracker.getLastSyncedPage();
         int pagesToFetch = 4; // Puedes ajustar este número

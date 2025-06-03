@@ -1,18 +1,16 @@
 package es.uca.gamebox.service;
 
 import es.uca.gamebox.component.client.SteamApiClient;
-import es.uca.gamebox.entity.Game;
-import es.uca.gamebox.entity.User;
-import es.uca.gamebox.repository.GameRepository;
-import es.uca.gamebox.repository.UserRepository;
+import es.uca.gamebox.entity.*;
+import es.uca.gamebox.repository.*;
 import es.uca.gamebox.security.AuthenticatedUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service("steam")
 public class SteamLibrarySyncService implements GameLibrarySyncService{
@@ -21,6 +19,15 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private GameUserRepository gameUserRepository;
+
+    @Autowired
+    private LibraryRepository libraryRepository;
+
+    @Autowired
+    private PlatformRepository platformRepository;
 
     @Autowired
     private AuthenticatedUserService authenticatedUserService;
@@ -32,15 +39,51 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
     private SteamApiClient steamApiClient;
 
     @Override
-    public void syncLibrary(String steamId) {
-        User currentUser = authenticatedUserService.getAuthenticatedUser();
+    public void syncLibrary(String steamId, User currentUser) {
 
+        Platform steamPlatform = getSteamPlatform();
+
+        Library steamLibrary = obtainLibrary(currentUser, steamPlatform);
 
         List<String> appIds = steamApiClient.getOwnedGameAppIds(steamId);
-        List<Game> ownedGames = gameRepository.findBySteamAppIdIn(appIds);
+
+        linkOwnedGames(steamLibrary, appIds);
 
         this.syncFriends(currentUser);
     }
+
+    private Platform getSteamPlatform() {
+        return platformRepository.findByNameIgnoreCase("Steam")
+                .orElseThrow(() -> new RuntimeException("Plataforma 'Steam' no encontrada"));
+    }
+
+    private Library obtainLibrary(User user, Platform platform) {
+        return libraryRepository.findByUserAndPlatform(user, platform)
+                .orElseGet(() -> {
+                    Library lib = new Library();
+                    lib.setName("Biblioteca de Steam");
+                    lib.setUser(user);
+                    lib.setPlatform(platform);
+                    lib.setCreatedAt(new java.util.Date());
+                    return libraryRepository.save(lib);
+                });
+    }
+
+    private void linkOwnedGames(Library library, List<String> appIds) {
+        List<Game> ownedGames = gameRepository.findBySteamAppIdIn(appIds);
+
+        for (Game game : ownedGames) {
+            boolean alreadyExists = gameUserRepository.existsByLibraryAndGame(library, game);
+            if (!alreadyExists) {
+                GameUser gu = new GameUser();
+                gu.setLibrary(library);
+                gu.setGame(game);
+                gu.setCreatedAt(LocalDateTime.now());
+                gameUserRepository.save(gu);
+            }
+        }
+    }
+
 
     public void syncFriends(User currentUser) {
         List<String> steamFriendIds = steamApiClient.getFriendsSteamIds(currentUser.getSteamId());

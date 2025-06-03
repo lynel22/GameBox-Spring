@@ -13,7 +13,9 @@ import org.springframework.data.annotation.CreatedDate;
 
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Getter
@@ -59,6 +61,14 @@ public class Game {
 
     @Column(unique = true)
     private String rawgSlug;
+
+    @ManyToMany
+    @JoinTable(
+            name = "game_store",
+            joinColumns = @JoinColumn(name = "game_id"),
+            inverseJoinColumns = @JoinColumn(name = "store_id")
+    )
+    private Set<Store> stores = new HashSet<>();
 
 
     @NotNull

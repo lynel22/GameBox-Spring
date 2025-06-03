@@ -1,6 +1,7 @@
 package es.uca.gamebox.service;
 
 import es.uca.gamebox.entity.Game;
+import es.uca.gamebox.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,11 +20,11 @@ public class LibrarySyncManager {
                 .collect(Collectors.toMap(s -> s.getClass().getAnnotation(Service.class).value(), s -> s));
     }
 
-    public void sync(String platform, String userId) {
+    public void sync(String platform, String userPlatformId, User user) {
         GameLibrarySyncService service = services.get(platform);
         if (service == null) {
             throw new UnsupportedOperationException("Platform not supported: " + platform);
         }
-        service.syncLibrary(userId);
+        service.syncLibrary(userPlatformId, user);
     }
 }

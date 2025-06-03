@@ -7,38 +7,50 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
+@Entity
 @Getter
 @Setter
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
+@EntityListeners(AuditingEntityListener.class)
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
-public class Library {
+public class Store{
     @Id
     @GeneratedValue
     @UuidGenerator
     private UUID id;
 
     @NotNull
-    private String Name;
+    private String name;
+
+    @NotNull
+    private String slugRawg;
+
+    @NotNull
+    private int rawgId;
+
+    @NotNull
+    private String domain;
+
+    private String imageUrl;
+
+    @ManyToMany(mappedBy = "stores")
+    private Set<Game> games = new HashSet<>();
 
     @NotNull
     @CreatedDate
     private Date createdAt;
-    @CreatedDate
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
-
-    @ManyToOne(optional = false)
-    private Platform platform;
-    @ManyToOne(optional = false)
-    private User user;
-
-
 }

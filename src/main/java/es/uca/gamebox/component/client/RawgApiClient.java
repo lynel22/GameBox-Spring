@@ -2,14 +2,14 @@ package es.uca.gamebox.component.client;
 
 
 
-import es.uca.gamebox.dto.rawg.RawgAchievementResponse;
-import es.uca.gamebox.dto.rawg.RawgGameDetailDto;
-import es.uca.gamebox.dto.rawg.RawgGamesResponse;
-import es.uca.gamebox.dto.rawg.RawgStoresResponseDto;
+import es.uca.gamebox.dto.rawg.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class RawgApiClient {
@@ -67,5 +67,23 @@ public class RawgApiClient {
 
         return restTemplate.getForObject(url, RawgStoresResponseDto.class);
     }
+
+    public List<RawgStoreDto> getStores(int page, int pageSize) {
+        String url = UriComponentsBuilder.fromHttpUrl(BASE_URL + "/stores")
+                .queryParam("key", apiKey)
+                .queryParam("lang", DEFAULT_LANG)
+                .queryParam("page", page)
+                .queryParam("page_size", pageSize)
+                .toUriString();
+
+        RawgAllStoresResponseDto response = restTemplate.getForObject(url, RawgAllStoresResponseDto.class);
+
+        if (response != null && response.getResults() != null) {
+            return response.getResults();
+        }
+
+        return new ArrayList<>();
+    }
+
 
 }

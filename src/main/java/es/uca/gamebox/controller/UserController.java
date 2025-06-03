@@ -6,6 +6,7 @@ import es.uca.gamebox.exception.ApiException;
 import es.uca.gamebox.security.JwtResponse;
 import es.uca.gamebox.security.JwtService;
 import es.uca.gamebox.security.LoginRequest;
+import es.uca.gamebox.service.LibrarySyncManager;
 import es.uca.gamebox.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,8 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
+    @Autowired
+    LibrarySyncManager librarySyncManager;
 
     @PostMapping("/register")
     public ResponseEntity<?> saveUser(
@@ -194,6 +197,8 @@ public class UserController {
 
             User user = (User) authentication.getPrincipal();
             userService.saveSteamId(user.getId(), steamId);
+
+            librarySyncManager.sync("steam", steamId, user);
 
             return ResponseEntity.ok("Steam ID vinculado: " + steamId);
         }
