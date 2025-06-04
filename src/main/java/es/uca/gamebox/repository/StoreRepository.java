@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface StoreRepository extends JpaRepository<Store, UUID> {
     Optional<Store> findBySlugRawg(String slug);
     Optional<Store> findByRawgId(int rawgId);
+    Optional<Store> findByNameIgnoreCase(String name);
 }

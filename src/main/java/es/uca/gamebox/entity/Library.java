@@ -30,13 +30,16 @@ public class Library {
     private String Name;
 
     @NotNull
+    @ManyToOne(optional = false)
+    private Store store;
+
+    @NotNull
     @CreatedDate
     private Date createdAt;
     @CreatedDate
     private LocalDateTime updatedAt;
 
-    @ManyToOne(optional = false)
-    private Platform platform;
+
     @ManyToOne(optional = false)
     private User user;
 

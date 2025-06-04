@@ -1,10 +1,7 @@
 package es.uca.gamebox.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -43,6 +40,9 @@ public class GameUser {
 
     @NotNull
     private Date lastPlayed;
+
+    @NotNull
+    private boolean synced = false;
 
     @NotNull
     @CreatedDate

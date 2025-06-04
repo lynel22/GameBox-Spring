@@ -4,6 +4,7 @@ import es.uca.gamebox.component.client.SteamApiClient;
 import es.uca.gamebox.entity.*;
 import es.uca.gamebox.repository.*;
 import es.uca.gamebox.security.AuthenticatedUserService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,9 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
     private LibraryRepository libraryRepository;
 
     @Autowired
+    private StoreRepository storeRepository;
+
+    @Autowired
     private PlatformRepository platformRepository;
 
     @Autowired
@@ -41,7 +45,7 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
     @Override
     public void syncLibrary(String steamId, User currentUser) {
 
-        Platform steamPlatform = getSteamPlatform();
+        Store steamPlatform = getSteamStore();
 
         Library steamLibrary = obtainLibrary(currentUser, steamPlatform);
 
@@ -52,21 +56,26 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
         this.syncFriends(currentUser);
     }
 
-    private Platform getSteamPlatform() {
-        return platformRepository.findByNameIgnoreCase("Steam")
-                .orElseThrow(() -> new RuntimeException("Plataforma 'Steam' no encontrada"));
+    private Store getSteamStore() {
+        return storeRepository.findByNameIgnoreCase("Steam")
+                .orElseThrow(() -> new RuntimeException("Steam store not found"));
     }
 
-    private Library obtainLibrary(User user, Platform platform) {
-        return libraryRepository.findByUserAndPlatform(user, platform)
-                .orElseGet(() -> {
-                    Library lib = new Library();
-                    lib.setName("Biblioteca de Steam");
-                    lib.setUser(user);
-                    lib.setPlatform(platform);
-                    lib.setCreatedAt(new java.util.Date());
-                    return libraryRepository.save(lib);
-                });
+    private Library obtainLibrary(User user, Store steamStore) {
+        List<Library> libraries = libraryRepository.findByUserIdAndStore(user.getId(), steamStore);
+        if (!libraries.isEmpty()) {
+            return libraries.getFirst();
+        }
+        else{
+            Library lib = new Library();
+            lib.setName("Biblioteca de Steam");
+            lib.setUser(user);
+            lib.setStore(steamStore);
+            lib.setStore(storeRepository.findByNameIgnoreCase("Steam")
+                    .orElseThrow(() -> new RuntimeException("Steam store not found")));
+            lib.setCreatedAt(new java.util.Date());
+            return libraryRepository.save(lib);
+        }
     }
 
     private void linkOwnedGames(Library library, List<String> appIds) {
@@ -78,7 +87,9 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
                 GameUser gu = new GameUser();
                 gu.setLibrary(library);
                 gu.setGame(game);
+                gu.setSynced(true);
                 gu.setCreatedAt(LocalDateTime.now());
+                //hay que obtener las horas jugadas y la última vez que se jugó porque estan a not null en la base de datos
                 gameUserRepository.save(gu);
             }
         }
@@ -109,4 +120,19 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
         userRepository.save(currentUser);
         userRepository.saveAll(registeredFriends);
     }
+
+    @Transactional
+    public void unlinkSteamAccount(UUID userId) {
+        Store steamStore = storeRepository.findByNameIgnoreCase("Steam")
+                .orElseThrow(() -> new RuntimeException("Steam store not found"));
+
+        //Obtener las bibliotecas del usuario que pertenezcan a Steam
+        List<Library> steamLibraries = libraryRepository.findByUserIdAndStore(userId, steamStore);
+
+        //Obtener los GameUser sincronizados automáticamente para esas bibliotecas
+        List<GameUser> syncedGameUsers = gameUserRepository.findByLibraryInAndSyncedTrue(steamLibraries);
+
+        gameUserRepository.deleteAll(syncedGameUsers);
+    }
+
 }

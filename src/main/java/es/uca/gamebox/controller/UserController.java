@@ -7,6 +7,7 @@ import es.uca.gamebox.security.JwtResponse;
 import es.uca.gamebox.security.JwtService;
 import es.uca.gamebox.security.LoginRequest;
 import es.uca.gamebox.service.LibrarySyncManager;
+import es.uca.gamebox.service.SteamLibrarySyncService;
 import es.uca.gamebox.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,8 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
+    @Autowired
+    private final SteamLibrarySyncService steamLibrarySyncService;
     @Autowired
     LibrarySyncManager librarySyncManager;
 
@@ -214,6 +217,7 @@ public class UserController {
 
         User user = (User) authentication.getPrincipal();
         userService.unlinkSteamAccount(user.getId());
+        steamLibrarySyncService.unlinkSteamAccount(user.getId());
 
         return ResponseEntity.ok("Steam account unlinked successfully");
     }
