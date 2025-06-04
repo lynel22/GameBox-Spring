@@ -12,9 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -29,6 +27,7 @@ public class GameSyncService {
     private final GenreRepository genreRepository;
     private final DeveloperRepository developerRepository;
     private final PlatformRepository platformRepository;
+    private final StoreRepository storeRepository;
     private final AchievementRepository achievementRepository;
     private final SyncPageTracker syncPageTracker;
 
@@ -58,13 +57,16 @@ public class GameSyncService {
             RawgGameDetailDto detail = rawgApiClient.getGameDetails(summary.getSlug());
             if (detail == null) continue;
 
+            // Obtener las stores asociadas al juego
+            RawgStoresResponseDto storesResponse = rawgApiClient.getGameStores(summary.getSlug());
+            List<RawgGameStoreEntryDto> stores = storesResponse != null ? storesResponse.getResults() : List.of();
+
             Game game = new Game();
             game.setName(detail.getName());
             game.setDescription(stripHtml(detail.getDescription()));
             game.setImageUrl(detail.getBackground_image());
-            log.info("Título: {}, Released: {}", detail.getName(), detail.getReleased());
             game.setReleaseDate(detail.getReleased());
-            game.setSteamAppId(extractSteamAppId(detail.getSlug()));
+            game.setSteamAppId(extractSteamAppId(stores));
             game.setRawgSlug(detail.getSlug());
             game.setCreatedAt(LocalDateTime.now());
             game.setUpdatedAt(LocalDateTime.now());
@@ -100,12 +102,10 @@ public class GameSyncService {
                         .map(rawgPlatform -> {
                             try {
                                 String platformName = rawgPlatform.getPlatform().getName();
-                                System.out.println("Plataforma: " + platformName);
                                 return platformRepository.findByNameIgnoreCase(platformName)
                                         .orElseGet(() -> platformRepository.save(new Platform(platformName)));
                             } catch (Exception e) {
                                 log.warn("No se pudo guardar la plataforma: {}", e.getMessage());
-                                e.printStackTrace();
                                 return null;
                             }
                         })
@@ -116,6 +116,9 @@ public class GameSyncService {
 
             gameRepository.save(game);
 
+            associateStoresWithGame(game, stores);
+
+            // Sincronizar logros
             RawgAchievementResponse achievementResponse = rawgApiClient.getAchievementsForGame(detail.getSlug());
             if (achievementResponse != null && achievementResponse.getResults() != null) {
                 for (RawgAchievementDto rawgAchievement : achievementResponse.getResults()) {
@@ -129,15 +132,73 @@ public class GameSyncService {
                     achievementRepository.save(achievement);
                 }
             }
-
         }
     }
+
+    public String extractSteamAppId(List<RawgGameStoreEntryDto> stores) {
+        if (stores == null || stores.isEmpty()) {
+            System.out.println("No stores found for the game.");
+            return null;
+        }
+        for (RawgGameStoreEntryDto entry : stores) {
+            String url = entry.getUrl();
+            if (url != null && url.contains("store.steampowered.com")) {
+                Pattern pattern = Pattern.compile("store\\.steampowered\\.com/app/(\\d+)");
+                Matcher matcher = pattern.matcher(url);
+                if (matcher.find()) {
+                    return matcher.group(1);
+                }
+            }
+        }
+        return null;
+    }
+
+    private void associateStoresWithGame(Game game, List<RawgGameStoreEntryDto> storeEntries) {
+        Set<Store> associatedStores = new HashSet<>();
+
+        for (RawgGameStoreEntryDto entry : storeEntries) {
+            try {
+                int rawgStoreId = Integer.parseInt(entry.getStoreId());
+                Optional<Store> optionalStore = storeRepository.findByRawgId(rawgStoreId);
+                optionalStore.ifPresent(associatedStores::add);
+            } catch (Exception e) {
+                log.warn("No se pudo asociar store con id '{}': {}", entry.getStoreId(), e.getMessage());
+            }
+        }
+
+        game.setStores(associatedStores);
+    }
+
 
     private String stripHtml(String html) {
         return html != null ? html.replaceAll("<[^>]*>", "").trim() : "";
     }
 
-    public String extractSteamAppId(String slug) {
+    @Transactional
+    public void updateGamesWithoutStores() {
+        List<Game> gamesWithoutStores = gameRepository.findAll().stream()
+                .filter(game -> game.getStores() == null || game.getStores().isEmpty())
+                .collect(Collectors.toList());
+
+        for (Game game : gamesWithoutStores) {
+            String slug = game.getRawgSlug();
+            if (slug == null || slug.isBlank()) continue;
+
+            RawgStoresResponseDto storesResponse = rawgApiClient.getGameStores(slug);
+            if (storesResponse == null || storesResponse.getResults() == null) continue;
+
+            int originalStoreCount = game.getStores().size();
+            associateStoresWithGame(game, storesResponse.getResults());
+
+            if (game.getStores().size() > originalStoreCount) {
+                game.setUpdatedAt(LocalDateTime.now());
+                gameRepository.save(game);
+                log.info("Actualizadas tiendas para el juego '{}'", game.getName());
+            }
+        }
+    }
+
+   /* public String extractSteamAppId(String slug) {
         RawgStoresResponseDto storesResponse = rawgApiClient.getGameStores(slug);
 
         if (storesResponse == null || storesResponse.getResults() == null) return null;
@@ -154,5 +215,5 @@ public class GameSyncService {
         }
 
         return null;
-    }
+    }*/
 }
