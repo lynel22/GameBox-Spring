@@ -36,10 +36,10 @@ public class GameUser {
     private Game game;
 
     @NotNull
-    private BigDecimal hoursPlayed;
+    private float hoursPlayed;
 
     @NotNull
-    private Date lastPlayed;
+    private LocalDateTime lastPlayed;
 
     @NotNull
     private boolean synced = false;

@@ -2,6 +2,7 @@ package es.uca.gamebox.component.client;
 
 import es.uca.gamebox.dto.SteamFriendsResponse;
 import es.uca.gamebox.dto.Friend;
+import es.uca.gamebox.dto.SteamOwnedGamesResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -23,7 +24,7 @@ public class SteamApiClient {
 
     public List<String> getOwnedGameAppIds(String steamId) {
         String url = String.format(
-                "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=%s&steamid=%s&include_appinfo=true",
+                "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=%s&steamid=%s&include_appinfo=true&include_played_free_games=true&include_gameplay_stats=true",
                 apiKey, steamId
         );
 
@@ -34,6 +35,26 @@ public class SteamApiClient {
         return games.stream()
                 .map(game -> ((Number) game.get("appid")).toString())
                 .toList();
+    }
+
+    public List<SteamOwnedGamesResponseDto.Game> getOwnedGames(String steamId) {
+        String url = String.format(
+                "https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=%s&steamid=%s&include_appinfo=true&include_played_free_games=true&include_gameplay_stats=true",
+                apiKey, steamId
+        );
+
+        ResponseEntity<SteamOwnedGamesResponseDto> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {}
+        );
+
+        SteamOwnedGamesResponseDto body = response.getBody();
+        if (body != null && body.getResponse() != null && body.getResponse().getGames() != null) {
+            return body.getResponse().getGames();
+        }
+        return List.of();
     }
 
     public List<String> getFriendsSteamIds(String steamId) {

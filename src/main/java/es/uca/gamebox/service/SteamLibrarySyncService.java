@@ -1,6 +1,7 @@
 package es.uca.gamebox.service;
 
 import es.uca.gamebox.component.client.SteamApiClient;
+import es.uca.gamebox.dto.SteamOwnedGamesResponseDto;
 import es.uca.gamebox.entity.*;
 import es.uca.gamebox.repository.*;
 import es.uca.gamebox.security.AuthenticatedUserService;
@@ -10,7 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service("steam")
@@ -49,9 +52,9 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
 
         Library steamLibrary = obtainLibrary(currentUser, steamPlatform);
 
-        List<String> appIds = steamApiClient.getOwnedGameAppIds(steamId);
+        List<SteamOwnedGamesResponseDto.Game> ownedGames = steamApiClient.getOwnedGames(steamId);
 
-        linkOwnedGames(steamLibrary, appIds);
+        linkOwnedGames(steamLibrary, ownedGames);
 
         this.syncFriends(currentUser);
     }
@@ -78,10 +81,23 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
         }
     }
 
-    private void linkOwnedGames(Library library, List<String> appIds) {
-        List<Game> ownedGames = gameRepository.findBySteamAppIdIn(appIds);
+    private void linkOwnedGames(Library library, List<SteamOwnedGamesResponseDto.Game> steamGames) {
+        // Mapea los AppIds para buscarlos en la base de datos
+        List<String> appIds = steamGames.stream()
+                .map(g -> String.valueOf(g.getAppid()))
+                .toList();
 
-        for (Game game : ownedGames) {
+        List<Game> dbGames = gameRepository.findBySteamAppIdIn(appIds);
+
+        Map<String, Game> appIdToGameMap = new HashMap<>();
+        for (Game game : dbGames) {
+            appIdToGameMap.put(game.getSteamAppId(), game);
+        }
+
+        for (SteamOwnedGamesResponseDto.Game steamGame : steamGames) {
+            Game game = appIdToGameMap.get(String.valueOf(steamGame.getAppid()));
+            if (game == null) continue;
+
             boolean alreadyExists = gameUserRepository.existsByLibraryAndGame(library, game);
             if (!alreadyExists) {
                 GameUser gu = new GameUser();
@@ -89,7 +105,18 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
                 gu.setGame(game);
                 gu.setSynced(true);
                 gu.setCreatedAt(LocalDateTime.now());
-                //hay que obtener las horas jugadas y la última vez que se jugó porque estan a not null en la base de datos
+
+                // Convertir minutos a horas (como float)
+                gu.setHoursPlayed(steamGame.getPlaytime_forever() / 60.0f);
+
+                // Convertir epoch a LocalDateTime
+                if (steamGame.getRtime_last_played() > 0) {
+                    gu.setLastPlayed(LocalDateTime.ofInstant(
+                            Instant.ofEpochSecond(steamGame.getRtime_last_played()),
+                            ZoneId.systemDefault()
+                    ));
+                }
+
                 gameUserRepository.save(gu);
             }
         }

@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class SteamOwnedGamesResponseDTO {
+public class SteamOwnedGamesResponseDto {
     private Response response;
 
     @Data
@@ -18,9 +18,10 @@ public class SteamOwnedGamesResponseDTO {
     @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Game {
-        private String appid;
+        private int appid;
         private String name;
-        private float playtime_forever;
+        private int playtime_forever; // en minutos
+        private long rtime_last_played; // epoch time en segundos
         private String img_icon_url;
     }
 }
