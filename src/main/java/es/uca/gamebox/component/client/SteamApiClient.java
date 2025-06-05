@@ -1,6 +1,6 @@
 package es.uca.gamebox.component.client;
 
-import es.uca.gamebox.dto.*;
+import es.uca.gamebox.dto.steam.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;

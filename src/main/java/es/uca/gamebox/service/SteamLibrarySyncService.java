@@ -1,17 +1,15 @@
 package es.uca.gamebox.service;
 
 import es.uca.gamebox.component.client.SteamApiClient;
-import es.uca.gamebox.dto.SteamOwnedGamesResponseDto;
-import es.uca.gamebox.dto.SteamPlayerAchievementDto;
+import es.uca.gamebox.dto.steam.SteamOwnedGamesResponseDto;
+import es.uca.gamebox.dto.steam.SteamPlayerAchievementDto;
 import es.uca.gamebox.entity.*;
 import es.uca.gamebox.repository.*;
-import es.uca.gamebox.security.AuthenticatedUserService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

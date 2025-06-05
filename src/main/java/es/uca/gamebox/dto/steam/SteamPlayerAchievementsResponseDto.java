@@ -1,4 +1,4 @@
-package es.uca.gamebox.dto;
+package es.uca.gamebox.dto.steam;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
