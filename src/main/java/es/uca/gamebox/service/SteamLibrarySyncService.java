@@ -2,6 +2,7 @@ package es.uca.gamebox.service;
 
 import es.uca.gamebox.component.client.SteamApiClient;
 import es.uca.gamebox.dto.SteamOwnedGamesResponseDto;
+import es.uca.gamebox.dto.SteamPlayerAchievementDto;
 import es.uca.gamebox.entity.*;
 import es.uca.gamebox.repository.*;
 import es.uca.gamebox.security.AuthenticatedUserService;
@@ -15,6 +16,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("steam")
 public class SteamLibrarySyncService implements GameLibrarySyncService{
@@ -34,10 +36,10 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
     private StoreRepository storeRepository;
 
     @Autowired
-    private PlatformRepository platformRepository;
+    private AchievementUserRepository achievementUserRepository;
 
     @Autowired
-    private AuthenticatedUserService authenticatedUserService;
+    private AchievementRepository achievementRepository;
 
     @Value("${steam.api.key}")
     private String apiKey;
@@ -118,6 +120,8 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
                 }
 
                 gameUserRepository.save(gu);
+
+                syncUserAchievementsForGame(game, gu, library.getUser().getSteamId());
             }
         }
     }
@@ -161,5 +165,45 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
 
         gameUserRepository.deleteAll(syncedGameUsers);
     }
+
+    private void syncUserAchievementsForGame(Game game, GameUser gameUser, String steamId) {
+        if (game.getSteamAppId() == null) return;
+
+        List<SteamPlayerAchievementDto> unlockedAchievements =
+                steamApiClient.getUnlockedAchievements(steamId, Long.parseLong(game.getSteamAppId()));
+
+        if (unlockedAchievements == null || unlockedAchievements.isEmpty()) return;
+
+        List<Achievement> dbAchievements = achievementRepository.findByGameAndNameIn(
+                game, unlockedAchievements.stream().map(SteamPlayerAchievementDto::getName).toList()
+        );
+
+        Map<String, Achievement> nameToAchievementMap = dbAchievements.stream()
+                .collect(Collectors.toMap(Achievement::getName, a -> a));
+
+        for (SteamPlayerAchievementDto steamAch : unlockedAchievements) {
+            Achievement matchedAchievement = nameToAchievementMap.get(steamAch.getName());
+            if (matchedAchievement == null) continue;
+
+            boolean alreadyExists = achievementUserRepository.existsByUserAndAchievementAndGameUser(
+                    gameUser.getLibrary().getUser(), matchedAchievement, gameUser);
+
+            if (!alreadyExists) {
+                AchievementUser au = new AchievementUser();
+                au.setAchievement(matchedAchievement);
+                au.setUser(gameUser.getLibrary().getUser());
+                au.setGameUser(gameUser);
+                au.setDateUnlocked(steamAch.getUnlocktime() != null
+                        ? LocalDateTime.ofInstant(
+                        Instant.ofEpochSecond(steamAch.getUnlocktime()), ZoneId.systemDefault())
+                        : LocalDateTime.now()
+                );
+
+                achievementUserRepository.save(au);
+            }
+        }
+    }
+
+
 
 }

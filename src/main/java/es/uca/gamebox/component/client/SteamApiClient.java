@@ -1,8 +1,6 @@
 package es.uca.gamebox.component.client;
 
-import es.uca.gamebox.dto.SteamFriendsResponse;
-import es.uca.gamebox.dto.Friend;
-import es.uca.gamebox.dto.SteamOwnedGamesResponseDto;
+import es.uca.gamebox.dto.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -73,6 +71,26 @@ public class SteamApiClient {
                     .collect(Collectors.toList());
         }
         return List.of();
+    }
+
+    public List<SteamPlayerAchievementDto> getUnlockedAchievements(String steamId, Long appId) {
+        String url = String.format(
+                "https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?key=%s&steamid=%s&appid=%d",
+                apiKey, steamId, appId
+        );
+
+        SteamPlayerAchievementsResponseDto response = restTemplate.getForObject(url, SteamPlayerAchievementsResponseDto.class);
+
+        if (response != null &&
+                response.getPlayerstats() != null &&
+                response.getPlayerstats().getAchievements() != null) {
+
+            return response.getPlayerstats().getAchievements().stream()
+                    .filter(a -> a.getAchieved() == 1)
+                    .toList();
+        }
+
+        return List.of(); // Vacía si no hay logros desbloqueados
     }
 
 }

@@ -31,10 +31,13 @@ public class AchievementUser {
     private Achievement achievement;
 
     @ManyToOne(optional = false)
+    private User user;
+
+    @ManyToOne(optional = false)
     private GameUser gameUser;
 
     @NotNull
-    private Date dateUnlocked;
+    private LocalDateTime dateUnlocked;
 
     @NotNull
     @CreatedDate
