@@ -8,6 +8,6 @@ import java.util.List;
 
 @Service
 public interface GameLibrarySyncService {
-
+    String getPlatform();
     void syncLibrary(String userId, User user);
 }

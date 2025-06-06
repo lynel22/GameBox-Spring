@@ -38,7 +38,6 @@ public class GameUser {
     @NotNull
     private float hoursPlayed;
 
-    @NotNull
     private LocalDateTime lastPlayed;
 
     @NotNull

@@ -57,7 +57,7 @@ public class SteamApiClient {
 
     public List<String> getFriendsSteamIds(String steamId) {
         String url = String.format("http://api.steampowered.com/ISteamUser/GetFriendList/v0001/?key=%s&steamid=%s&relationship=friend", apiKey, steamId);
-
+        System.out.println("url api frinds: " + url);
         ResponseEntity<SteamFriendsResponse> response = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
@@ -74,8 +74,10 @@ public class SteamApiClient {
     }
 
     public List<SteamPlayerAchievementDto> getUnlockedAchievements(String steamId, Long appId) {
+        System.out.printf("Syncing achievements: steamId=%s, appId=%d%n", steamId, appId);
+
         String url = String.format(
-                "https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?key=%s&steamid=%s&appid=%d",
+                "https://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v1/?key=%s&steamid=%s&appid=%d&l=english",
                 apiKey, steamId, appId
         );
 

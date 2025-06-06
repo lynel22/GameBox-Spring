@@ -7,8 +7,12 @@ import es.uca.gamebox.entity.*;
 import es.uca.gamebox.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -16,7 +20,7 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Service("steam")
+@Service
 public class SteamLibrarySyncService implements GameLibrarySyncService{
     @Autowired
     private GameRepository gameRepository;
@@ -39,11 +43,15 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
     @Autowired
     private AchievementRepository achievementRepository;
 
-    @Value("${steam.api.key}")
-    private String apiKey;
+    @Override
+    public String getPlatform() {
+        return "steam";
+    }
 
     @Autowired
     private SteamApiClient steamApiClient;
+
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 
     @Override
     public void syncLibrary(String steamId, User currentUser) {
@@ -56,7 +64,7 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
 
         linkOwnedGames(steamLibrary, ownedGames);
 
-        this.syncFriends(currentUser);
+        this.syncFriends(currentUser, steamId);
     }
 
     private Store getSteamStore() {
@@ -82,7 +90,6 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
     }
 
     private void linkOwnedGames(Library library, List<SteamOwnedGamesResponseDto.Game> steamGames) {
-        // Mapea los AppIds para buscarlos en la base de datos
         List<String> appIds = steamGames.stream()
                 .map(g -> String.valueOf(g.getAppid()))
                 .toList();
@@ -93,6 +100,8 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
         for (Game game : dbGames) {
             appIdToGameMap.put(game.getSteamAppId(), game);
         }
+
+        int delayIndex = 0; // Contador de delay por juego
 
         for (SteamOwnedGamesResponseDto.Game steamGame : steamGames) {
             Game game = appIdToGameMap.get(String.valueOf(steamGame.getAppid()));
@@ -105,11 +114,8 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
                 gu.setGame(game);
                 gu.setSynced(true);
                 gu.setCreatedAt(LocalDateTime.now());
-
-                // Convertir minutos a horas (como float)
                 gu.setHoursPlayed(steamGame.getPlaytime_forever() / 60.0f);
 
-                // Convertir epoch a LocalDateTime
                 if (steamGame.getRtime_last_played() > 0) {
                     gu.setLastPlayed(LocalDateTime.ofInstant(
                             Instant.ofEpochSecond(steamGame.getRtime_last_played()),
@@ -119,14 +125,27 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
 
                 gameUserRepository.save(gu);
 
-                syncUserAchievementsForGame(game, gu, library.getUser().getSteamId());
+                // Sincronizar logros en segundo plano con delay incremental
+                final Game finalGame = game;
+                final GameUser finalGu = gu;
+                int delaySeconds = delayIndex++;
+                String steamId = library.getUser().getSteamId();
+
+                scheduler.schedule(() -> {
+                    try {
+                        syncUserAchievementsForGame(finalGame, finalGu, steamId);
+                    } catch (Exception e) {
+                        System.err.println("Error sincronizando logros para el juego " + finalGame.getName());
+                        e.printStackTrace();
+                    }
+                }, delaySeconds, TimeUnit.SECONDS);
             }
         }
     }
 
 
-    public void syncFriends(User currentUser) {
-        List<String> steamFriendIds = steamApiClient.getFriendsSteamIds(currentUser.getSteamId());
+    public void syncFriends(User currentUser, String steamId) {
+        List<String> steamFriendIds = steamApiClient.getFriendsSteamIds(steamId);
         if (steamFriendIds.isEmpty()) return;
 
         List<User> registeredFriends = Collections.emptyList();
@@ -161,16 +180,35 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
         //Obtener los GameUser sincronizados automáticamente para esas bibliotecas
         List<GameUser> syncedGameUsers = gameUserRepository.findByLibraryInAndSyncedTrue(steamLibraries);
 
+        //Eliminar los AchievementUser asociados a esos GameUser
+        achievementUserRepository.deleteByGameUserIn(syncedGameUsers);
+
         gameUserRepository.deleteAll(syncedGameUsers);
     }
 
     private void syncUserAchievementsForGame(Game game, GameUser gameUser, String steamId) {
         if (game.getSteamAppId() == null) return;
 
-        List<SteamPlayerAchievementDto> unlockedAchievements =
-                steamApiClient.getUnlockedAchievements(steamId, Long.parseLong(game.getSteamAppId()));
+        List<SteamPlayerAchievementDto> unlockedAchievements;
+
+        try {
+            unlockedAchievements = steamApiClient.getUnlockedAchievements(steamId, Long.parseLong(game.getSteamAppId()));
+        } catch (HttpClientErrorException e) {
+            // Manejo específico de "Requested app has no stats"
+            if (e.getResponseBodyAsString().contains("\"Requested app has no stats\"")) {
+                System.out.printf("El juego '%s' (appId=%s) no tiene logros disponibles en la API de Steam.%n",
+                        game.getName(), game.getSteamAppId());
+                return;
+            } else {
+                throw e; // Propagamos otras excepciones que no son esperadas
+            }
+        }
 
         if (unlockedAchievements == null || unlockedAchievements.isEmpty()) return;
+
+        for (SteamPlayerAchievementDto achievement : unlockedAchievements) {
+            System.out.printf("Achievement unlocked: %s for game %s%n", achievement.getName(), game.getName());
+        }
 
         List<Achievement> dbAchievements = achievementRepository.findByGameAndNameIn(
                 game, unlockedAchievements.stream().map(SteamPlayerAchievementDto::getName).toList()
@@ -201,6 +239,7 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
             }
         }
     }
+
 
 
 

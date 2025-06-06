@@ -1,6 +1,5 @@
 package es.uca.gamebox.service;
 
-import es.uca.gamebox.entity.Game;
 import es.uca.gamebox.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,7 @@ public class LibrarySyncManager {
     @Autowired
     public LibrarySyncManager(List<GameLibrarySyncService> serviceList) {
         this.services = serviceList.stream()
-                .collect(Collectors.toMap(s -> s.getClass().getAnnotation(Service.class).value(), s -> s));
+                .collect(Collectors.toMap(GameLibrarySyncService::getPlatform, s -> s));
     }
 
     public void sync(String platform, String userPlatformId, User user) {
