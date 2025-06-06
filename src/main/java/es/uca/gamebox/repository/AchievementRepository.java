@@ -11,5 +11,5 @@ import java.util.UUID;
 public interface AchievementRepository extends JpaRepository<Achievement, UUID> {
     Optional<Achievement> findByNameIgnoreCase(String name);
     List<Achievement> findByGameAndNameIn(Game game, List<String> names);
-
+    boolean existsByGameAndName(Game game, String name);
 }

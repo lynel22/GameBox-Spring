@@ -95,4 +95,24 @@ public class SteamApiClient {
         return List.of(); // Vacía si no hay logros desbloqueados
     }
 
+    public List<SteamGameSchemaResponseDto.Achievement> getAllAchievementsForGame(Long appId) {
+        String url = String.format(
+                "https://api.steampowered.com/ISteamUserStats/GetSchemaForGame/v2/?key=%s&appid=%d&l=english",
+                apiKey, appId
+        );
+
+        SteamGameSchemaResponseDto response = restTemplate.getForObject(url, SteamGameSchemaResponseDto.class);
+        if (response != null
+                && response.getGame() != null
+                && response.getGame().getAvailableGameStats() != null
+                && response.getGame().getAvailableGameStats().getAchievements() != null) {
+
+            return response.getGame().getAvailableGameStats().getAchievements();
+        }
+
+        return List.of();
+    }
+
+
+
 }

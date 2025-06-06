@@ -13,4 +13,5 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
     Optional<Game> findByName(String name);
     List<Game> findBySteamAppIdIn(List<String> appIds);
     Optional<Game> findByRawgSlug(String rawgSlug);
+    List<Game> findBySteamAppIdNotNullAndSteamAchievementsSyncedFalse();
 }

@@ -70,6 +70,8 @@ public class Game {
     )
     private Set<Store> stores = new HashSet<>();
 
+    @NotNull
+    private boolean steamAchievementsSynced = false;
 
     @NotNull
     @CreatedDate
