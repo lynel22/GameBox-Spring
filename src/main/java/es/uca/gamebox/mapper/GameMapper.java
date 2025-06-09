@@ -2,9 +2,8 @@ package es.uca.gamebox.mapper;
 
 import es.uca.gamebox.dto.DeveloperDto;
 import es.uca.gamebox.dto.GameDto;
-import es.uca.gamebox.dto.GenreSimpleDto;
+import es.uca.gamebox.dto.GenreDto;
 import es.uca.gamebox.entity.Game;
-import es.uca.gamebox.entity.Genre;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
@@ -30,8 +29,8 @@ public class GameMapper {
             dto.setDeveloper(null); 
         }
 
-        List<GenreSimpleDto> genreDtos = game.getGenres().stream().map(genre -> {
-            GenreSimpleDto g = new GenreSimpleDto();
+        List<GenreDto> genreDtos = game.getGenres().stream().map(genre -> {
+            GenreDto g = new GenreDto();
             g.setId(genre.getId());
             g.setName(genre.getName());
             g.setSpanishName(genre.getSpanishName());

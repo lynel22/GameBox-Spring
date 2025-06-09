@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.UUID;
 
 @Data
-public class GenreSimpleDto {
+public class GenreDto {
     private UUID id;
     private String name;
     private String spanishName;
