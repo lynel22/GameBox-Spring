@@ -22,7 +22,7 @@ public class SteamAchievementImportService {
     private final GameRepository gameRepository;
     private final AchievementRepository achievementRepository;
 
-    @PostConstruct
+   /*@PostConstruct*/
     public void init() {
         new Thread(this::importSteamAchievementsForAllGames).start();
     }

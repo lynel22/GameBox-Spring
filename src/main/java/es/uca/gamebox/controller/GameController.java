@@ -1,0 +1,57 @@
+package es.uca.gamebox.controller;
+
+import es.uca.gamebox.dto.GameDto;
+import es.uca.gamebox.entity.Game;
+import es.uca.gamebox.entity.User;
+import es.uca.gamebox.service.GameService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+
+import java.util.List;
+
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+@RequestMapping(path = {"/game"})
+public class GameController {
+    @Autowired
+    private final GameService gameService;
+
+    @GetMapping("/library")
+    public List<GameDto> getLibrary(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to game library");
+            throw new RuntimeException("Unauthorized access");
+        }
+        log.info("Fetching game library for user: {}", authentication.getName());
+        User user = (User) authentication.getPrincipal();
+        return gameService.getLibrary(user);
+    }
+
+    @GetMapping("/library/steam")
+    public List<GameDto> getSteamLibrary(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to steam game library");
+            throw new RuntimeException("Unauthorized access");
+        }
+        User user = (User) authentication.getPrincipal();
+        return gameService.getGamesByStoreName(user, "Steam");
+    }
+
+    @GetMapping("/library/epic")
+    public List<GameDto> getEpicLibrary(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to epic game library");
+            throw new RuntimeException("Unauthorized access");
+        }
+        User user = (User) authentication.getPrincipal();
+        return gameService.getGamesByStoreName(user, "Epic Games");
+    }
+
+}

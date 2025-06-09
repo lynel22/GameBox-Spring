@@ -39,9 +39,7 @@ public class Library {
     @CreatedDate
     private LocalDateTime updatedAt;
 
-
     @ManyToOne(optional = false)
     private User user;
-
 
 }
