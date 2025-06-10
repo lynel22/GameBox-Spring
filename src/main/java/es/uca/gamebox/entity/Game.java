@@ -49,7 +49,7 @@ public class Game {
             joinColumns = @JoinColumn(name = "game_id"),
             inverseJoinColumns = @JoinColumn(name = "genre_id")
     )
-    List<Genre> genres;
+    Set<Genre> genres;
 
     @ManyToMany
     @JoinTable(
@@ -57,7 +57,7 @@ public class Game {
             joinColumns = @JoinColumn(name = "game_id"),
             inverseJoinColumns = @JoinColumn(name = "platform_id")
     )
-    List<Platform> platforms;
+    Set<Platform> platforms;
 
     @Column(unique = true)
     private String rawgSlug;

@@ -11,7 +11,9 @@ import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -32,6 +34,10 @@ public class Library {
     @NotNull
     @ManyToOne(optional = false)
     private Store store;
+
+    @OneToMany(mappedBy = "library", fetch = FetchType.LAZY)
+    private List<GameUser> gameUsers = new ArrayList<>();
+
 
     @NotNull
     @CreatedDate

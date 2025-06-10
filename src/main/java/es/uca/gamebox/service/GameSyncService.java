@@ -73,7 +73,7 @@ public class GameSyncService {
 
             // Sincronizar géneros
             if (detail.getGenres() != null) {
-                List<Genre> genres = detail.getGenres().stream()
+                Set<Genre> genres = detail.getGenres().stream()
                         .map(rawgGenre -> {
                             try {
                                 return genreRepository.findByNameIgnoreCase(rawgGenre.getName())
@@ -84,7 +84,7 @@ public class GameSyncService {
                             }
                         })
                         .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toSet()); // Change to Collectors.toSet()
                 game.setGenres(genres);
             }
 
@@ -98,7 +98,7 @@ public class GameSyncService {
 
             // Sincronizar plataformas
             if (detail.getPlatforms() != null) {
-                List<Platform> platforms = detail.getPlatforms().stream()
+                Set<Platform> platforms = detail.getPlatforms().stream()
                         .map(rawgPlatform -> {
                             try {
                                 String platformName = rawgPlatform.getPlatform().getName();
@@ -110,7 +110,7 @@ public class GameSyncService {
                             }
                         })
                         .filter(Objects::nonNull)
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toSet()); // Change to Collectors.toSet()
                 game.setPlatforms(platforms);
             }
 

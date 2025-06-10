@@ -1,5 +1,6 @@
 package es.uca.gamebox.controller;
 
+import es.uca.gamebox.dto.GameDetailDto;
 import es.uca.gamebox.dto.GameDto;
 import es.uca.gamebox.entity.Game;
 import es.uca.gamebox.entity.User;
@@ -10,10 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -52,6 +55,19 @@ public class GameController {
         }
         User user = (User) authentication.getPrincipal();
         return gameService.getGamesByStoreName(user, "Epic Games");
+    }
+
+    @GetMapping("/detail")
+    public GameDetailDto getGameDetail(Authentication authentication, @RequestParam UUID gameId) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to game detail");
+            throw new RuntimeException("Unauthorized access");
+        }
+
+        User user = (User) authentication.getPrincipal();
+
+        System.out.println("Fetching game detail for user: " + user.getUsername() + " and gameId: " + gameId);
+        return gameService.getGameDetail(user, gameId);
     }
 
 }

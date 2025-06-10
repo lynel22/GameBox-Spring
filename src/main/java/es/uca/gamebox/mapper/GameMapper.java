@@ -1,9 +1,7 @@
 package es.uca.gamebox.mapper;
 
-import es.uca.gamebox.dto.DeveloperDto;
-import es.uca.gamebox.dto.GameDto;
-import es.uca.gamebox.dto.GenreDto;
-import es.uca.gamebox.entity.Game;
+import es.uca.gamebox.dto.*;
+import es.uca.gamebox.entity.*;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
@@ -46,4 +44,70 @@ public class GameMapper {
     public static List<GameDto> toDtoList(List<Game> games) {
         return games.stream().map(GameMapper::toDto).collect(Collectors.toList());
     }
+
+
+    public static GameDetailDto toGameDetailDto(
+            Game game,
+            List<Achievement> allAchievements,
+            List<AchievementUser> unlockedAchievements,
+            List<User> friendsWithGame,
+            GameUser gameUser
+    ) {
+        GameDetailDto dto = new GameDetailDto();
+
+        dto.setId(game.getId());
+        dto.setName(game.getName());
+        dto.setDescription(game.getDescription());
+        dto.setImageUrl(game.getImageUrl());
+        dto.setReleaseDate(game.getReleaseDate());
+
+        // Developer
+        if (game.getDeveloper() != null) {
+            DeveloperDto developerDto = new DeveloperDto();
+            developerDto.setId(game.getDeveloper().getId());
+            developerDto.setName(game.getDeveloper().getName());
+            dto.setDeveloper(developerDto);
+        }
+
+        // Genres
+        dto.setGenres(game.getGenres().stream().map(genre -> {
+            GenreDto genreDto = new GenreDto();
+            genreDto.setId(genre.getId());
+            genreDto.setName(genre.getName());
+            genreDto.setSpanishName(genre.getSpanishName());
+            return genreDto;
+        }).collect(Collectors.toList()));
+
+        // Achievements
+        dto.setAchievements(allAchievements.stream().map(achievement -> {
+            AchievementDto a = new AchievementDto();
+            a.setId(achievement.getId());
+            a.setName(achievement.getName());
+            a.setDescription(achievement.getDescription());
+            a.setImageUrl(achievement.getImageUrl());
+            a.setUnlocked(unlockedAchievements.stream()
+                    .anyMatch(au -> au.getAchievement().getId().equals(achievement.getId()))
+            );
+            return a;
+        }).collect(Collectors.toList()));
+
+        // Friends
+        dto.setFriendsThatOwnIt(friendsWithGame.stream().map(friend -> {
+            FriendDto f = new FriendDto();
+            f.setId(friend.getId());
+            f.setUsername(friend.getRealUserName());
+            f.setImageUrl(friend.getImageUrl());
+            return f;
+        }).collect(Collectors.toList()));
+
+        // Last played and hours played
+        if (gameUser != null) {
+            dto.setLastPlayed(gameUser.getLastPlayed());
+            dto.setHoursPlayed(gameUser.getHoursPlayed());
+        }
+
+
+        return dto;
+    }
+
 }

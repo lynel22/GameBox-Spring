@@ -1,9 +1,6 @@
 package es.uca.gamebox.repository;
 
-import es.uca.gamebox.entity.Achievement;
-import es.uca.gamebox.entity.AchievementUser;
-import es.uca.gamebox.entity.GameUser;
-import es.uca.gamebox.entity.User;
+import es.uca.gamebox.entity.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,4 +10,5 @@ public interface AchievementUserRepository extends JpaRepository<AchievementUser
     boolean existsByUserAndAchievement(User user, Achievement achievement);
     boolean existsByUserAndAchievementAndGameUser(User user, Achievement achievement, GameUser gameUser);
     void deleteByGameUserIn(List<GameUser> syncedGameUsers);
+    List<AchievementUser> findAllByGameUser_GameAndUser(Game game, User user);
 }
