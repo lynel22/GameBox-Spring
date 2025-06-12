@@ -85,9 +85,21 @@ public class GameMapper {
             a.setName(achievement.getName());
             a.setDescription(achievement.getDescription());
             a.setImageUrl(achievement.getImageUrl());
-            a.setUnlocked(unlockedAchievements.stream()
-                    .anyMatch(au -> au.getAchievement().getId().equals(achievement.getId()))
-            );
+
+            // Buscar si está desbloqueado
+            AchievementUser matched = unlockedAchievements.stream()
+                    .filter(au -> au.getAchievement().getId().equals(achievement.getId()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (matched != null) {
+                a.setUnlocked(true);
+                a.setDateUnlocked(matched.getDateUnlocked());
+            } else {
+                a.setUnlocked(false);
+                a.setDateUnlocked(null);
+            }
+
             return a;
         }).collect(Collectors.toList()));
 

@@ -8,11 +8,9 @@ import es.uca.gamebox.service.GameService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
@@ -70,4 +68,17 @@ public class GameController {
         return gameService.getGameDetail(user, gameId);
     }
 
+    @PostMapping("/add-achievement")
+    public ResponseEntity<?> addAchievement(Authentication authentication, @RequestParam UUID gameId, @RequestParam UUID achievementId) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to add achievement");
+            throw new RuntimeException("Unauthorized access");
+        }
+
+        User user = (User) authentication.getPrincipal();
+        gameService.addAchievementToGame(user, gameId, achievementId);
+
+        log.info("Achievement {} added to game {} for user {}", achievementId, gameId, user.getUsername());
+        return  ResponseEntity.ok("Achievement added successfully");
+    }
 }

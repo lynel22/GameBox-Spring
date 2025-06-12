@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -70,6 +71,33 @@ public class GameService {
 
         return GameMapper.toGameDetailDto(game, achievements, unlockedAchievements, friendsWithGame, gameUser);
 
+    }
+
+    public void addAchievementToGame(User user, UUID gameId, UUID achievementId) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        Achievement achievement = achievementRepository.findById(achievementId)
+                .orElseThrow(() -> new RuntimeException("Achievement not found"));
+
+        // Buscar el GameUser correspondiente
+        GameUser gameUser = gameUserRepository.findByUserAndGame(user.getId(), game.getId())
+                .orElseThrow(() -> new RuntimeException("GameUser not found for this user and game"));
+
+        // Verificar si el usuario ya ha desbloqueado el logro
+        boolean alreadyUnlocked = achievementUserRepository.existsByUserAndAchievement(user, achievement);
+        if (alreadyUnlocked) {
+            throw new RuntimeException("Achievement already unlocked");
+        }
+
+        // Crear el AchievementUser
+        AchievementUser achievementUser = new AchievementUser();
+        achievementUser.setAchievement(achievement);
+        achievementUser.setUser(user);
+        achievementUser.setGameUser(gameUser);
+        achievementUser.setDateUnlocked(LocalDateTime.now());
+
+        achievementUserRepository.save(achievementUser);
     }
 
 }

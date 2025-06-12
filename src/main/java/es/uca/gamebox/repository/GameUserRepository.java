@@ -9,10 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public interface GameUserRepository extends JpaRepository<GameUser, UUID> {
     boolean existsByLibraryAndGame(Library steamLibrary, Game game);
@@ -25,8 +22,10 @@ public interface GameUserRepository extends JpaRepository<GameUser, UUID> {
     @Query("""
     SELECT DISTINCT gu.game
     FROM GameUser gu
-    WHERE gu.library.user = :user AND gu.library.store.name = :storeName
-""")
+    WHERE gu.library.user = :user AND gu.library.store.name = :storeName""")
     List<Game> findGamesByUserAndStoreName(@Param("user") User user, @Param("storeName") String storeName);
+
+    @Query("SELECT gu FROM GameUser gu WHERE gu.game.id = :gameId AND gu.library.user.id = :userId")
+    Optional<GameUser> findByUserAndGame(@Param("userId") UUID userId, @Param("gameId") UUID gameId);
 
 }
