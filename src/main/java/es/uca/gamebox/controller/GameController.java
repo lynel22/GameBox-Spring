@@ -81,4 +81,14 @@ public class GameController {
         log.info("Achievement {} added to game {} for user {}", achievementId, gameId, user.getUsername());
         return  ResponseEntity.ok("Achievement added successfully");
     }
+
+    @GetMapping("/search")
+    public List<GameDto> searchGames(@RequestParam String q) {
+        if (q == null || q.trim().isEmpty()) {
+            return List.of();
+        }
+        System.out.println("Searching games with query: " + q);
+        return gameService.searchGamesByName(q.trim());
+    }
+
 }

@@ -23,4 +23,6 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
             "stores"     // si se necesita en el futuro
     })
     Optional<Game> findWithDetailsById(UUID id);
+
+    List<Game> findByNameContainingIgnoreCase(String namePart);
 }

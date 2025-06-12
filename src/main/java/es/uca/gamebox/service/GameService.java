@@ -100,4 +100,9 @@ public class GameService {
         achievementUserRepository.save(achievementUser);
     }
 
+    public List<GameDto> searchGamesByName(String query) {
+        List<Game> games = gameRepository.findByNameContainingIgnoreCase(query);
+        return GameMapper.toDtoList(games);
+    }
+
 }

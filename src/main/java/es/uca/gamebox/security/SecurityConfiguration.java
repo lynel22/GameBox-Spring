@@ -57,6 +57,8 @@ public class SecurityConfiguration {
                         .requestMatchers("/game/library/steam").authenticated()
                         .requestMatchers("/game/library/epic").authenticated()
                         .requestMatchers("/game/detail").authenticated()
+                        .requestMatchers("/game/search").authenticated()
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
