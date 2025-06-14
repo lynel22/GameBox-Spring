@@ -101,7 +101,7 @@ public class GameService {
     }
 
     public List<GameDto> searchGamesByName(String query) {
-        List<Game> games = gameRepository.findByNameContainingIgnoreCase(query);
+        List<Game> games = gameRepository.findTop20ByNameContainingIgnoreCase(query);
         return GameMapper.toDtoList(games);
     }
 
