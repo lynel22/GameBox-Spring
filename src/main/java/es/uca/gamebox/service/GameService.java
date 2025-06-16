@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -31,6 +33,12 @@ public class GameService {
 
     @Autowired
     AchievementUserRepository achievementUserRepository;
+
+    @Autowired
+    LibraryRepository libraryRepository;
+
+    @Autowired
+    StoreRepository storeRepository;
 
     public List<GameDto> getLibrary(User currentUser) {
         List<Game> games = gameUserRepository.findGamesByUser(currentUser);
@@ -104,5 +112,42 @@ public class GameService {
         List<Game> games = gameRepository.findTop20ByNameContainingIgnoreCase(query);
         return GameMapper.toDtoList(games);
     }
+
+    public void addGameToLibraries(UUID gameId, List<UUID> storeIds, User user) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Juego no encontrado."));
+
+        for (UUID storeId : storeIds) {
+            Store store = storeRepository.findById(storeId)
+                    .orElseThrow(() -> new RuntimeException("Store no encontrada: " + storeId));
+
+            // Buscar o crear la biblioteca del usuario para esta store
+            Library library = libraryRepository.findByUserAndStore(user, store)
+                    .orElseGet(() -> {
+                        Library newLibrary = new Library();
+                        newLibrary.setStore(store);
+                        newLibrary.setUser(user);
+                        newLibrary.setName("Biblioteca de " + store.getName());
+                        newLibrary.setCreatedAt(new Date());
+                        newLibrary.setUpdatedAt(LocalDateTime.now());
+                        return libraryRepository.save(newLibrary);
+                    });
+
+            // Verificar si ya tiene el juego
+            boolean exists = gameUserRepository.existsByLibraryAndGame(library, game);
+            if (!exists) {
+                GameUser gameUser = new GameUser();
+                gameUser.setLibrary(library);
+                gameUser.setGame(game);
+                gameUser.setHoursPlayed(0f);
+                gameUser.setSynced(false);
+                gameUser.setCreatedAt(LocalDateTime.now());
+                gameUser.setUpdatedAt(LocalDateTime.now());
+
+                gameUserRepository.save(gameUser);
+            }
+        }
+    }
+
 
 }

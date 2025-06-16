@@ -112,10 +112,24 @@ public class GameMapper {
             return f;
         }).collect(Collectors.toList()));
 
+        // Stores
+        dto.setStores(game.getStores().stream().map(store -> {
+            StoreDto storeDto = new StoreDto();
+            storeDto.setId(store.getId());
+            storeDto.setName(store.getName());
+            storeDto.setImageUrl(store.getImageUrl());
+            return storeDto;
+        }).collect(Collectors.toList()));
+
+
         // Last played and hours played
         if (gameUser != null) {
             dto.setLastPlayed(gameUser.getLastPlayed());
             dto.setHoursPlayed(gameUser.getHoursPlayed());
+            dto.setOwnedByUser(true);
+        }
+        else {
+            dto.setOwnedByUser(false);
         }
 
 

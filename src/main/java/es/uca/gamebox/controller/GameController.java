@@ -91,4 +91,21 @@ public class GameController {
         return gameService.searchGamesByName(q.trim());
     }
 
+    @PostMapping("/add-game-to-libraries")
+    public ResponseEntity<?> addGameToLibraries(Authentication authentication,
+                                                @RequestParam UUID gameId,
+                                                @RequestParam List<UUID> storeIds) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to add game to libraries");
+            throw new RuntimeException("Unauthorized access");
+        }
+        if (storeIds == null || storeIds.isEmpty()) {
+            return ResponseEntity.badRequest().body("Empty storeIDs list.");
+        }
+
+        User user = (User) authentication.getPrincipal();
+        gameService.addGameToLibraries(gameId, storeIds, user);
+        return ResponseEntity.ok("Game added to libraries successfully");
+    }
+
 }

@@ -18,7 +18,10 @@ public class GameDetailDto {
     private List<GenreDto> genres;
     private List<AchievementDto> achievements;
     private List<FriendDto> friendsThatOwnIt;
+    private List<StoreDto> stores;
 
     private LocalDateTime lastPlayed;
     private Float hoursPlayed;
+
+    private boolean ownedByUser;
 }

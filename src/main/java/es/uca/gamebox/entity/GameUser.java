@@ -10,8 +10,6 @@ import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 
-import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
