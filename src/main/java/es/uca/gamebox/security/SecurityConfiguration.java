@@ -58,6 +58,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/game/library/epic").authenticated()
                         .requestMatchers("/game/detail").authenticated()
                         .requestMatchers("/game/search").authenticated()
+                        .requestMatchers("/game/add-game-to-libraries").authenticated()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )

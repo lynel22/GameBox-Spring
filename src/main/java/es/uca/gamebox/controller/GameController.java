@@ -2,6 +2,7 @@ package es.uca.gamebox.controller;
 
 import es.uca.gamebox.dto.GameDetailDto;
 import es.uca.gamebox.dto.GameDto;
+import es.uca.gamebox.dto.request.StoreIdsRequest;
 import es.uca.gamebox.entity.Game;
 import es.uca.gamebox.entity.User;
 import es.uca.gamebox.service.GameService;
@@ -92,20 +93,24 @@ public class GameController {
     }
 
     @PostMapping("/add-game-to-libraries")
-    public ResponseEntity<?> addGameToLibraries(Authentication authentication,
-                                                @RequestParam UUID gameId,
-                                                @RequestParam List<UUID> storeIds) {
+    public ResponseEntity<?> addGameToLibraries(
+            Authentication authentication,
+            @RequestParam UUID gameId,
+            @RequestBody StoreIdsRequest request
+    ) {
         if (authentication == null || !authentication.isAuthenticated()) {
             log.warn("Unauthorized access attempt to add game to libraries");
             throw new RuntimeException("Unauthorized access");
         }
-        if (storeIds == null || storeIds.isEmpty()) {
+
+        if (request.getStoreIds() == null || request.getStoreIds().isEmpty()) {
             return ResponseEntity.badRequest().body("Empty storeIDs list.");
         }
 
         User user = (User) authentication.getPrincipal();
-        gameService.addGameToLibraries(gameId, storeIds, user);
+        gameService.addGameToLibraries(gameId, request.getStoreIds(), user);
         return ResponseEntity.ok("Game added to libraries successfully");
     }
+
 
 }
