@@ -2,8 +2,8 @@ package es.uca.gamebox.controller;
 
 import es.uca.gamebox.dto.GameDetailDto;
 import es.uca.gamebox.dto.GameDto;
+import es.uca.gamebox.dto.LibraryGameCountDto;
 import es.uca.gamebox.dto.request.StoreIdsRequest;
-import es.uca.gamebox.entity.Game;
 import es.uca.gamebox.entity.User;
 import es.uca.gamebox.service.GameService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,25 +35,20 @@ public class GameController {
         return gameService.getLibrary(user);
     }
 
-    @GetMapping("/library/steam")
-    public List<GameDto> getSteamLibrary(Authentication authentication) {
+    @GetMapping("/library-by-store")
+    public List<GameDto> getLibraryByStore(
+            @RequestParam("store") String storeName,
+            Authentication authentication) {
+
         if (authentication == null || !authentication.isAuthenticated()) {
-            log.warn("Unauthorized access attempt to steam game library");
+            log.warn("Unauthorized access attempt to {} game library", storeName);
             throw new RuntimeException("Unauthorized access");
         }
+
         User user = (User) authentication.getPrincipal();
-        return gameService.getGamesByStoreName(user, "Steam");
+        return gameService.getGamesByStoreName(user, storeName);
     }
 
-    @GetMapping("/library/epic")
-    public List<GameDto> getEpicLibrary(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            log.warn("Unauthorized access attempt to epic game library");
-            throw new RuntimeException("Unauthorized access");
-        }
-        User user = (User) authentication.getPrincipal();
-        return gameService.getGamesByStoreName(user, "Epic Games");
-    }
 
     @GetMapping("/detail")
     public GameDetailDto getGameDetail(Authentication authentication, @RequestParam UUID gameId) {
@@ -110,6 +104,16 @@ public class GameController {
         User user = (User) authentication.getPrincipal();
         gameService.addGameToLibraries(gameId, request.getStoreIds(), user);
         return ResponseEntity.ok("Game added to libraries successfully");
+    }
+
+    @GetMapping("/library-game-count")
+    public List<LibraryGameCountDto> getLibraryGameCount(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to library game count");
+            throw new RuntimeException("Unauthorized access");
+        }
+        User user = (User) authentication.getPrincipal();
+        return gameService.getLibraryGameCount(user);
     }
 
 

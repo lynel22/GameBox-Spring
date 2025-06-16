@@ -2,6 +2,7 @@ package es.uca.gamebox.service;
 
 import es.uca.gamebox.dto.GameDetailDto;
 import es.uca.gamebox.dto.GameDto;
+import es.uca.gamebox.dto.LibraryGameCountDto;
 import es.uca.gamebox.entity.*;
 
 import es.uca.gamebox.mapper.GameMapper;
@@ -149,5 +150,9 @@ public class GameService {
         }
     }
 
+
+    public List<LibraryGameCountDto> getLibraryGameCount(User user) {
+        return gameUserRepository.countGamesGroupedByStore(user);
+    }
 
 }

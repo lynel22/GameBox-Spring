@@ -1,5 +1,6 @@
 package es.uca.gamebox.repository;
 
+import es.uca.gamebox.dto.LibraryGameCountDto;
 import es.uca.gamebox.entity.Game;
 import es.uca.gamebox.entity.GameUser;
 import es.uca.gamebox.entity.Library;
@@ -27,5 +28,15 @@ public interface GameUserRepository extends JpaRepository<GameUser, UUID> {
 
     @Query("SELECT gu FROM GameUser gu WHERE gu.game.id = :gameId AND gu.library.user.id = :userId")
     Optional<GameUser> findByUserAndGame(@Param("userId") UUID userId, @Param("gameId") UUID gameId);
+
+    @Query("""
+        SELECT new es.uca.gamebox.dto.LibraryGameCountDto(s.name, COUNT(gu))
+        FROM GameUser gu
+        JOIN gu.library l
+        JOIN l.store s
+        WHERE l.user = :user
+        GROUP BY s.name
+    """)
+    List<LibraryGameCountDto> countGamesGroupedByStore(@Param("user") User user);
 
 }
