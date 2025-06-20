@@ -98,7 +98,7 @@ public class UserService {
 
     public void verifyAccount(String token) {
         User user = userRepository.findByVerificationToken(token).orElseThrow(() -> new RuntimeException("Invalid token"));
-
+        System.out.println("Verifying user: " + user.getUsername());
         user.setEnabled(true);
         user.setVerificationToken(null); // Eliminamos el token tras la verificación
         userRepository.save(user);
@@ -129,6 +129,7 @@ public class UserService {
     public void saveSteamId(UUID userId, String steamId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ApiException("User not found"));
         user.setSteamId(steamId);
+        System.out.println("Saving Steam ID: " + steamId + " for user: " + user.getUsername());
         userRepository.save(user);
     }
 

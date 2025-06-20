@@ -56,15 +56,18 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
     @Override
     public void syncLibrary(String steamId, User currentUser) {
 
+        User updatedUser = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Store steamPlatform = getSteamStore();
 
-        Library steamLibrary = obtainLibrary(currentUser, steamPlatform);
+        Library steamLibrary = obtainLibrary(updatedUser, steamPlatform);
 
         List<SteamOwnedGamesResponseDto.Game> ownedGames = steamApiClient.getOwnedGames(steamId);
 
         linkOwnedGames(steamLibrary, ownedGames);
 
-        this.syncFriends(currentUser, steamId);
+        this.syncFriends(updatedUser, steamId);
     }
 
     private Store getSteamStore() {
