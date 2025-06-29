@@ -127,6 +127,10 @@ public class GameService {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new RuntimeException("Juego no encontrado."));
 
+        // Buscar y eliminar si el juego estaba en la wishlist del usuario
+        wishlistRepository.findByUserAndGame(user, game)
+                .ifPresent(wishlistRepository::delete);
+
         for (UUID storeId : storeIds) {
             Store store = storeRepository.findById(storeId)
                     .orElseThrow(() -> new RuntimeException("Store no encontrada: " + storeId));
