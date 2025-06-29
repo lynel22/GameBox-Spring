@@ -9,6 +9,7 @@ import es.uca.gamebox.service.GameService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -123,12 +124,27 @@ public class GameController {
     ) {
         if (authentication == null || !authentication.isAuthenticated()) {
             log.warn("Unauthorized access attempt to add game to wishlist");
-            throw new RuntimeException("Unauthorized access");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
         }
 
         User user = (User) authentication.getPrincipal();
-        /*gameService.addGameToWishlist(gameId, user);*/
+        gameService.addGameToWishlist(gameId, user);
         return ResponseEntity.ok("Game added to wishlist successfully");
+    }
+
+    @DeleteMapping("/remove-game-from-wishlist")
+    public ResponseEntity<?> removeGameFromWishlist(
+            Authentication authentication,
+            @RequestParam UUID gameId
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to remove game from wishlist");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+        }
+
+        User user = (User) authentication.getPrincipal();
+        gameService.removeGameFromWishlist(gameId, user);
+        return ResponseEntity.ok("Game removed from wishlist successfully");
     }
 
 

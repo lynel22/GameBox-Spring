@@ -179,4 +179,14 @@ public class GameService {
         wishlistRepository.save(wishlist);
     }
 
+    public void removeGameFromWishlist(UUID gameId, User user) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        Wishlist wishlist = wishlistRepository.findByUserAndGame(user, game)
+                .orElseThrow(() -> new RuntimeException("Game not found in wishlist"));
+
+        wishlistRepository.delete(wishlist);
+    }
+
 }
