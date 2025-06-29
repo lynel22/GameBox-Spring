@@ -116,5 +116,20 @@ public class GameController {
         return gameService.getLibraryGameCount(user);
     }
 
+    @PostMapping("/add-game-to-wishlist")
+    public ResponseEntity<?> addGameToWishlist(
+            Authentication authentication,
+            @RequestParam UUID gameId
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to add game to wishlist");
+            throw new RuntimeException("Unauthorized access");
+        }
+
+        User user = (User) authentication.getPrincipal();
+        /*gameService.addGameToWishlist(gameId, user);*/
+        return ResponseEntity.ok("Game added to wishlist successfully");
+    }
+
 
 }

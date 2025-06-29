@@ -41,6 +41,9 @@ public class GameService {
     @Autowired
     StoreRepository storeRepository;
 
+    @Autowired
+    WishlistRepository wishlistRepository;
+
     public List<GameDto> getLibrary(User currentUser) {
         List<Game> games = gameUserRepository.findGamesByUser(currentUser);
         return GameMapper.toDtoList(games);
@@ -89,9 +92,14 @@ public class GameService {
         Achievement achievement = achievementRepository.findById(achievementId)
                 .orElseThrow(() -> new RuntimeException("Achievement not found"));
 
-        // Buscar el GameUser correspondiente
-        GameUser gameUser = gameUserRepository.findByUserAndGame(user.getId(), game.getId())
-                .orElseThrow(() -> new RuntimeException("GameUser not found for this user and game"));
+        // Buscar todas las instancias del juego en bibliotecas del usuario
+        List<GameUser> gameUsers = gameUserRepository.findAllByLibraryUserIdAndGameId(user.getId(), game.getId());
+
+        if (gameUsers.isEmpty()) {
+            throw new RuntimeException("GameUser not found for this user and game");
+        }
+
+        GameUser gameUser = gameUsers.getFirst();
 
         // Verificar si el usuario ya ha desbloqueado el logro
         boolean alreadyUnlocked = achievementUserRepository.existsByUserAndAchievement(user, achievement);
@@ -108,6 +116,7 @@ public class GameService {
 
         achievementUserRepository.save(achievementUser);
     }
+
 
     public List<GameDto> searchGamesByName(String query) {
         List<Game> games = gameRepository.findTop20ByNameContainingIgnoreCase(query);
@@ -153,6 +162,21 @@ public class GameService {
 
     public List<LibraryGameCountDto> getLibraryGameCount(User user) {
         return gameUserRepository.countGamesGroupedByStore(user);
+    }
+
+    public void addGameToWishlist(UUID gameId, User user) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new RuntimeException("Game not found"));
+
+        if (wishlistRepository.existsByUserAndGame(user, game)) {
+            throw new RuntimeException("Game already in wishlist");
+        }
+
+        Wishlist wishlist = new Wishlist();
+        wishlist.setUser(user);
+        wishlist.setGame(game);
+
+        wishlistRepository.save(wishlist);
     }
 
 }

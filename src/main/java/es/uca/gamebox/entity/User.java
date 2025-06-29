@@ -77,6 +77,10 @@ public class User implements UserDetails {
     )
     private List<User> friends = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Wishlist> wishlist = new ArrayList<>();
+
+
     @NotNull
     @CreatedDate
     private LocalDateTime createdAt;
