@@ -51,7 +51,8 @@ public class GameMapper {
             List<Achievement> allAchievements,
             List<AchievementUser> unlockedAchievements,
             List<User> friendsWithGame,
-            GameUser gameUser
+            GameUser gameUser,
+            boolean inWishlist
     ) {
         GameDetailDto dto = new GameDetailDto();
 
@@ -132,6 +133,7 @@ public class GameMapper {
             dto.setOwnedByUser(false);
         }
 
+        dto.setInWishlist(inWishlist);
 
         return dto;
     }

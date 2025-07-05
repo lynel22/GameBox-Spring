@@ -23,5 +23,6 @@ public class GameDetailDto {
     private LocalDateTime lastPlayed;
     private Float hoursPlayed;
 
+    private boolean inWishlist;
     private boolean ownedByUser;
 }

@@ -80,8 +80,17 @@ public class GameService {
                 .findFirst()
                 .orElse(null);
 
+        boolean inWishlist = wishlistRepository.existsByUserAndGame(managedUser, game);
 
-        return GameMapper.toGameDetailDto(game, achievements, unlockedAchievements, friendsWithGame, gameUser);
+
+        return GameMapper.toGameDetailDto(
+                game,
+                achievements,
+                unlockedAchievements,
+                friendsWithGame,
+                gameUser,
+                inWishlist
+        );
 
     }
 
