@@ -2,6 +2,7 @@ package es.uca.gamebox.controller;
 
 import es.uca.gamebox.dto.GameDetailDto;
 import es.uca.gamebox.dto.GameDto;
+import es.uca.gamebox.dto.GameWishlistDto;
 import es.uca.gamebox.dto.LibraryGameCountDto;
 import es.uca.gamebox.dto.request.StoreIdsRequest;
 import es.uca.gamebox.entity.User;
@@ -145,6 +146,16 @@ public class GameController {
         User user = (User) authentication.getPrincipal();
         gameService.removeGameFromWishlist(gameId, user);
         return ResponseEntity.ok("Game removed from wishlist successfully");
+    }
+
+    @GetMapping("/user-wishlist")
+    public List<GameWishlistDto> getUserWishlist(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to user wishlist");
+            throw new RuntimeException("Unauthorized access");
+        }
+        User user = (User) authentication.getPrincipal();
+        return gameService.getUserWishlist(user);
     }
 
 

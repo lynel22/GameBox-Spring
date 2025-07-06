@@ -2,6 +2,7 @@ package es.uca.gamebox.service;
 
 import es.uca.gamebox.dto.GameDetailDto;
 import es.uca.gamebox.dto.GameDto;
+import es.uca.gamebox.dto.GameWishlistDto;
 import es.uca.gamebox.dto.LibraryGameCountDto;
 import es.uca.gamebox.entity.*;
 
@@ -16,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class GameService {
@@ -200,6 +202,14 @@ public class GameService {
                 .orElseThrow(() -> new RuntimeException("Game not found in wishlist"));
 
         wishlistRepository.delete(wishlist);
+    }
+
+    public List<GameWishlistDto> getUserWishlist(User user) {
+        List<Wishlist> wishlistEntries = wishlistRepository.findByUser(user);
+
+        return wishlistEntries.stream()
+                .map(GameMapper::toGameWishlistDto)
+                .collect(Collectors.toList());
     }
 
 }

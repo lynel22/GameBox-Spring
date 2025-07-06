@@ -138,4 +138,34 @@ public class GameMapper {
         return dto;
     }
 
+    public static GameWishlistDto toGameWishlistDto(Wishlist wishlist) {
+        Game game = wishlist.getGame();
+
+        GameWishlistDto dto = new GameWishlistDto();
+        dto.setId(game.getId());
+        dto.setName(game.getName());
+        dto.setImageUrl(game.getImageUrl());
+        dto.setReleaseDate(game.getReleaseDate());
+        dto.setFechaAdicion(wishlist.getFechaAdicion());
+
+        dto.setGenres(game.getGenres().stream().map(genre -> {
+            GenreDto g = new GenreDto();
+            g.setId(genre.getId());
+            g.setName(genre.getName());
+            g.setSpanishName(genre.getSpanishName());
+            return g;
+        }).collect(Collectors.toList()));
+
+        dto.setStores(game.getStores().stream().map(store -> {
+            StoreDto s = new StoreDto();
+            s.setId(store.getId());
+            s.setName(store.getName());
+            s.setImageUrl(store.getImageUrl());
+            return s;
+        }).collect(Collectors.toList()));
+
+        return dto;
+    }
+
+
 }
