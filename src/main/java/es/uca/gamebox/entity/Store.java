@@ -40,6 +40,8 @@ public class Store{
     @NotNull
     private int rawgId;
 
+    private String cheapSharkStoreId;
+
     @NotNull
     private String domain;
 

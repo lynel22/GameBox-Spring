@@ -26,4 +26,6 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
 
     List<Game> findByNameContainingIgnoreCase(String namePart);
     List<Game> findTop20ByNameContainingIgnoreCase(String name);
+
+    Optional<Game> findByNameIgnoreCase(String title);
 }

@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 
@@ -43,6 +44,9 @@ public class Game {
 
     private String steamAppId;
 
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Deal> deals;
+
     @ManyToMany
     @JoinTable(
             name = "game_genre",
@@ -76,6 +80,6 @@ public class Game {
     @NotNull
     @CreatedDate
     private LocalDateTime createdAt;
-    @CreatedDate
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 }
