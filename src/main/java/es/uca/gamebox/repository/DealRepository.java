@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface DealRepository extends JpaRepository<Deal, UUID> {
-
+    List<Deal> findByEndDateIsNull();
+    List<Deal> findByEndDateIsNullAndStore_NameIgnoreCase(String storeName);
     List<Deal> findAllByLastSeenBeforeAndEndDateIsNull(Instant threshold);
 }

@@ -1,9 +1,6 @@
 package es.uca.gamebox.controller;
 
-import es.uca.gamebox.dto.GameDetailDto;
-import es.uca.gamebox.dto.GameDto;
-import es.uca.gamebox.dto.GameWishlistDto;
-import es.uca.gamebox.dto.LibraryGameCountDto;
+import es.uca.gamebox.dto.*;
 import es.uca.gamebox.dto.request.StoreIdsRequest;
 import es.uca.gamebox.entity.User;
 import es.uca.gamebox.service.GameService;
@@ -158,5 +155,17 @@ public class GameController {
         return gameService.getUserWishlist(user);
     }
 
+    @GetMapping("/deals")
+    public List<DealDto> getDeals(
+            @RequestParam(required = false) String store,
+            Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to deals");
+            throw new RuntimeException("Unauthorized access");
+        }
+
+        User user = (User) authentication.getPrincipal();
+        return gameService.getDeals(user, store);
+    }
 
 }

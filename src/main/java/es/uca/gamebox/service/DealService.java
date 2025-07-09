@@ -28,13 +28,20 @@ public class DealService {
     private final GameRepository gameRepository;
     private final StoreRepository storeRepository;
 
-    @Scheduled(cron = "0 0 13 * * *")
+    @Scheduled(cron = "0 57 13 * * *")
     public void syncDailyDeals() {
         List<CheapSharkDealDto> fetchedDeals = cheapSharkApiClient.getAllDeals();
         Instant now = Instant.now();
 
         for (CheapSharkDealDto dto : fetchedDeals) {
             UUID dealUUID = UUID.nameUUIDFromBytes(dto.getDealID().getBytes());
+
+            // Asignar Game por título si existe
+            Optional<Game> gameOpt = gameRepository.findByNameIgnoreCase(dto.getTitle());
+            if (gameOpt.isEmpty()) {
+                System.out.println("No se encontró juego para oferta: " + dto.getTitle());
+                continue; // saltamos si no hay juego
+            }
 
             Deal deal = dealRepository.findById(dealUUID).orElseGet(() -> {
                 Deal newDeal = new Deal();
@@ -43,21 +50,19 @@ public class DealService {
                 return newDeal;
             });
 
-            deal.setTitle(dto.getTitle());
             deal.setNormalPrice(new BigDecimal(dto.getNormalPrice()));
             deal.setSalePrice(new BigDecimal(dto.getSalePrice()));
             deal.setSavings(new BigDecimal(dto.getSavings()));
             deal.setLastSeen(now);
-
-            // Asignar Game por título si existe (ignorar mayúsculas/minúsculas)
-            Optional<Game> gameOpt = gameRepository.findByNameIgnoreCase(dto.getTitle());
-            gameOpt.ifPresent(deal::setGame);
+            deal.setGame(gameOpt.get());
 
             // Asignar Store si existe
             Optional<Store> storeOpt = storeRepository.findByCheapSharkStoreId(dto.getStoreID());
             storeOpt.ifPresent(deal::setStore);
 
             dealRepository.save(deal);
+
+            System.out.println("Oferta guardada: " + deal.getGame().getName() + " - " + deal.getSalePrice() + " en " + (deal.getStore() != null ? deal.getStore().getName() : "Desconocido"));
         }
 
         // Marcar como caducadas las que no han sido vistas hoy
@@ -68,4 +73,5 @@ public class DealService {
         }
         dealRepository.saveAll(expired);
     }
+
 }

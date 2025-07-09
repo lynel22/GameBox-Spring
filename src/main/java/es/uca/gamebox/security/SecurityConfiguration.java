@@ -61,6 +61,7 @@ public class SecurityConfiguration {
                         .requestMatchers(("/game/library-game-count")).authenticated()
                         .requestMatchers(("/game/add-game-to-wishlist")).authenticated()
                         .requestMatchers("/game/remove-game-from-wishlist").authenticated()
+                        .requestMatchers("/game/deals").authenticated()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )

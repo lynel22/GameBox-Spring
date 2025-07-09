@@ -1,9 +1,6 @@
 package es.uca.gamebox.service;
 
-import es.uca.gamebox.dto.GameDetailDto;
-import es.uca.gamebox.dto.GameDto;
-import es.uca.gamebox.dto.GameWishlistDto;
-import es.uca.gamebox.dto.LibraryGameCountDto;
+import es.uca.gamebox.dto.*;
 import es.uca.gamebox.entity.*;
 
 import es.uca.gamebox.mapper.GameMapper;
@@ -45,6 +42,9 @@ public class GameService {
 
     @Autowired
     WishlistRepository wishlistRepository;
+
+    @Autowired
+    DealRepository dealRepository;
 
     public List<GameDto> getLibrary(User currentUser) {
         List<Game> games = gameUserRepository.findGamesByUser(currentUser);
@@ -210,6 +210,28 @@ public class GameService {
         return wishlistEntries.stream()
                 .map(GameMapper::toGameWishlistDto)
                 .collect(Collectors.toList());
+    }
+
+    public List<DealDto> getDeals(User user, String store) {
+        List<Deal> activeDeals;
+
+        if (store != null && !store.isBlank()) {
+            activeDeals = dealRepository.findByEndDateIsNullAndStore_NameIgnoreCase(store.trim());
+        } else {
+            activeDeals = dealRepository.findByEndDateIsNull();
+        }
+
+        return activeDeals.stream()
+                .map(deal -> new DealDto(
+                        deal.getGame().getName(),
+                        deal.getGame().getId().toString(),
+                        deal.getGame().getImageUrl(),
+                        deal.getNormalPrice(),
+                        deal.getSalePrice(),
+                        deal.getSavings(),
+                        deal.getStore() != null ? deal.getStore().getName() : "Desconocido"
+                ))
+                .toList();
     }
 
 }

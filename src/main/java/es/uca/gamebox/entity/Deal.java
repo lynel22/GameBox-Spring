@@ -24,7 +24,6 @@ import java.util.UUID;
 public class Deal {
     @Id
     private UUID dealID;
-    private String title;
     private BigDecimal normalPrice, salePrice;
     private BigDecimal savings;
     private Instant firstSeen;
@@ -32,6 +31,7 @@ public class Deal {
     private Instant endDate;
 
     @ManyToOne
+    @JoinColumn(name = "game_id", nullable = false)
     private Game game;
 
     @ManyToOne
