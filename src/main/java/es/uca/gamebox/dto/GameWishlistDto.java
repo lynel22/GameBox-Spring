@@ -17,4 +17,5 @@ public class GameWishlistDto {
     private List<StoreDto> stores;
 
     private LocalDateTime fechaAdicion;
+    private List<DealDto> deals;
 }

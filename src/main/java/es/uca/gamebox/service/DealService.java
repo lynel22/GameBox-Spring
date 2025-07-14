@@ -28,7 +28,7 @@ public class DealService {
     private final GameRepository gameRepository;
     private final StoreRepository storeRepository;
 
-    @Scheduled(cron = "0 57 13 * * *")
+    @Scheduled(cron = "0 0 13 * * *")
     public void syncDailyDeals() {
         List<CheapSharkDealDto> fetchedDeals = cheapSharkApiClient.getAllDeals();
         Instant now = Instant.now();

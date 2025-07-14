@@ -164,6 +164,19 @@ public class GameMapper {
             return s;
         }).collect(Collectors.toList()));
 
+        dto.setDeals(game.getDeals().stream().map(deal ->
+                new DealDto(
+                        game.getName(),
+                        game.getId().toString(),
+                        game.getImageUrl(),
+                        deal.getNormalPrice(),
+                        deal.getSalePrice(),
+                        deal.getSavings(),
+                        deal.getStore() != null ? deal.getStore().getName() : null
+                )
+        ).collect(Collectors.toList()));
+
+
         return dto;
     }
 
