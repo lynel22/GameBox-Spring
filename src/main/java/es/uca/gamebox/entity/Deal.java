@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
@@ -22,8 +23,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @JsonIgnoreProperties(value = {"createdAt", "updatedAt"}, allowGetters = true)
 public class Deal {
+
     @Id
-    private UUID dealID;
+    @GeneratedValue
+    @UuidGenerator
+    private UUID dealID; // Nuevo ID interno
+
+    @Column(unique = true, nullable = false)
+    private String cheapSharkID; // ID original de CheapShark
+
     private BigDecimal normalPrice, salePrice;
     private BigDecimal savings;
     private Instant firstSeen;
@@ -37,9 +45,12 @@ public class Deal {
     @ManyToOne
     private Store store;
 
+    private String dealUrl;
+
     @NotNull
     @CreatedDate
     private LocalDateTime createdAt;
+
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
@@ -53,3 +64,4 @@ public class Deal {
         }
     }
 }
+

@@ -15,4 +15,5 @@ public class DealDto {
     private BigDecimal salePrice;
     private BigDecimal savings;
     private String storeName;
+    private String dealUrl;
 }

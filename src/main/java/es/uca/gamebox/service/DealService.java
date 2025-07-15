@@ -28,14 +28,13 @@ public class DealService {
     private final GameRepository gameRepository;
     private final StoreRepository storeRepository;
 
-    @Scheduled(cron = "0 0 13 * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void syncDailyDeals() {
+        System.out.println(">>> Ejecutando syncDailyDeals");
         List<CheapSharkDealDto> fetchedDeals = cheapSharkApiClient.getAllDeals();
         Instant now = Instant.now();
 
         for (CheapSharkDealDto dto : fetchedDeals) {
-            UUID dealUUID = UUID.nameUUIDFromBytes(dto.getDealID().getBytes());
-
             // Asignar Game por título si existe
             Optional<Game> gameOpt = gameRepository.findByNameIgnoreCase(dto.getTitle());
             if (gameOpt.isEmpty()) {
@@ -43,17 +42,32 @@ public class DealService {
                 continue; // saltamos si no hay juego
             }
 
-            Deal deal = dealRepository.findById(dealUUID).orElseGet(() -> {
+            Deal deal = dealRepository.findByCheapSharkID(dto.getDealID()).orElseGet(() -> {
                 Deal newDeal = new Deal();
-                newDeal.setDealID(dealUUID);
+                newDeal.setCheapSharkID(dto.getDealID());
                 newDeal.setFirstSeen(now);
                 return newDeal;
             });
+
+            System.out.println("Procesando oferta: " + dto.getTitle() + " - " + dto.getDealID());
+
 
             deal.setNormalPrice(new BigDecimal(dto.getNormalPrice()));
             deal.setSalePrice(new BigDecimal(dto.getSalePrice()));
             deal.setSavings(new BigDecimal(dto.getSavings()));
             deal.setLastSeen(now);
+            // Obtener y asignar el link de la oferta
+            try {
+                // Espaciar para evitar error 429
+                Thread.sleep(300); // 300 ms por oferta = máx. 3.3 requests/seg
+                String dealUrl = cheapSharkApiClient.getDealLink(dto.getDealID());
+                deal.setDealUrl(dealUrl);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.err.println("Thread interrumpido al esperar para evitar 429.");
+            }
+
+
             deal.setGame(gameOpt.get());
 
             // Asignar Store si existe

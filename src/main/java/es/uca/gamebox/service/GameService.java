@@ -229,9 +229,11 @@ public class GameService {
                         deal.getNormalPrice(),
                         deal.getSalePrice(),
                         deal.getSavings(),
-                        deal.getStore() != null ? deal.getStore().getName() : "Desconocido"
+                        deal.getStore() != null ? deal.getStore().getName() : "Desconocido",
+                        deal.getDealUrl()
                 ))
                 .toList();
+
     }
 
 }

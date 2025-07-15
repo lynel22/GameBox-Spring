@@ -172,7 +172,8 @@ public class GameMapper {
                         deal.getNormalPrice(),
                         deal.getSalePrice(),
                         deal.getSavings(),
-                        deal.getStore() != null ? deal.getStore().getName() : null
+                        deal.getStore() != null ? deal.getStore().getName() : null,
+                        deal.getDealUrl()
                 )
         ).collect(Collectors.toList()));
 
