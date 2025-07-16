@@ -135,6 +135,18 @@ public class GameMapper {
 
         dto.setInWishlist(inWishlist);
 
+        // Deals
+        dto.setDeals(game.getDeals().stream().map(deal -> new DealDto(
+                game.getName(),
+                game.getId().toString(),
+                game.getImageUrl(),
+                deal.getNormalPrice(),
+                deal.getSalePrice(),
+                deal.getSavings(),
+                deal.getStore() != null ? deal.getStore().getName() : null,
+                deal.getDealUrl()
+        )).toList());
+
         return dto;
     }
 

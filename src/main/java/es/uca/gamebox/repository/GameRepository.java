@@ -19,10 +19,13 @@ public interface GameRepository extends JpaRepository<Game, UUID> {
     @EntityGraph(attributePaths = {
             "developer",
             "genres",
-            "platforms", // si se necesita en el futuro
-            "stores"     // si se necesita en el futuro
+            "platforms",
+            "stores",
+            "deals",
+            "deals.store"
     })
     Optional<Game> findWithDetailsById(UUID id);
+
 
     List<Game> findByNameContainingIgnoreCase(String namePart);
     List<Game> findTop20ByNameContainingIgnoreCase(String name);

@@ -25,4 +25,6 @@ public class GameDetailDto {
 
     private boolean inWishlist;
     private boolean ownedByUser;
+
+    private List<DealDto> deals;
 }
