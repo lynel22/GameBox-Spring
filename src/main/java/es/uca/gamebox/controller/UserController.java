@@ -1,6 +1,7 @@
 package es.uca.gamebox.controller;
 
 import es.uca.gamebox.dto.UserDto;
+import es.uca.gamebox.dto.UserProfileDto;
 import es.uca.gamebox.entity.User;
 import es.uca.gamebox.exception.ApiException;
 import es.uca.gamebox.security.JwtResponse;
@@ -137,15 +138,17 @@ public class UserController {
         }
     }
 
-    @GetMapping("profile")
-    public ResponseEntity<?> getUserProfile(Authentication authentication) {
+    @GetMapping("/profile")
+    public UserProfileDto getUserProfile(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
+            throw new RuntimeException("Unauthorized");
         }
-        System.out.println("Getteando user");
+
         User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(new UserDto(user));
+        return userService.getUserProfile(user.getId());
     }
+
+
 
     @PostMapping("profile/update")
     public ResponseEntity<?> updateProfile(

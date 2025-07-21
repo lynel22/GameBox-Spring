@@ -74,6 +74,10 @@ public class Game {
     )
     private Set<Store> stores = new HashSet<>();
 
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Achievement> achievements;
+
+
     @NotNull
     private boolean steamAchievementsSynced = false;
 

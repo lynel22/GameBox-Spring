@@ -1,8 +1,14 @@
 package es.uca.gamebox.service;
 
-import es.uca.gamebox.entity.User;
+import es.uca.gamebox.dto.FriendDto;
+import es.uca.gamebox.dto.GameSummaryDto;
+import es.uca.gamebox.dto.UserProfileDto;
+import es.uca.gamebox.entity.*;
 import es.uca.gamebox.exception.ApiException;
+import es.uca.gamebox.repository.AchievementRepository;
+import es.uca.gamebox.repository.AchievementUserRepository;
 import es.uca.gamebox.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +21,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(rollbackOn = Exception.class)
@@ -27,6 +34,11 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private final AchievementUserRepository achievementUserRepository;
+    @Autowired
+    private final AchievementRepository achievementRepository;
 
     public void createUser(String username, String password, String email, MultipartFile avatar) {
         Optional<User> existingUser = userRepository.findByEmail(email);
@@ -140,4 +152,71 @@ public class UserService {
         userRepository.save(user);
         log.info("Steam account unlinked for user: {}", user.getUsername());
     }
+
+    @Transactional
+    public UserProfileDto getUserProfile(UUID userId) {
+        // Obtener usuario
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        // Obtener todos los GameUser del usuario desde sus bibliotecas
+        List<GameUser> gameUsers = user.getLibraries().stream()
+                .flatMap(library -> {
+                    List<GameUser> gus = library.getGameUsers();
+                    return gus != null ? gus.stream() : Stream.empty();
+                })
+                .toList();
+
+        List<GameSummaryDto> gameSummaries = new ArrayList<>();
+
+        for (GameUser gameUser : gameUsers) {
+            Game game = gameUser.getGame();
+            Store store = game.getStores().stream().findFirst().orElse(null);
+
+            int achievementsUnlocked = achievementUserRepository.countByGameUserId(gameUser.getId());
+            int totalAchievements = game.getAchievements() != null ? game.getAchievements().size() : 0;
+
+            GameSummaryDto dto = new GameSummaryDto();
+            dto.setId(game.getId());
+            dto.setName(game.getName());
+            dto.setImageUrl(game.getImageUrl());
+            dto.setStoreName(store != null ? store.getName() : null);
+            dto.setStoreImageUrl(store != null ? store.getImageUrl() : null);
+            dto.setHoursPlayed(gameUser.getHoursPlayed());
+            dto.setLastSession(gameUser.getLastPlayed());
+            dto.setAchievementsUnlocked(achievementsUnlocked);
+            dto.setTotalAchievements(totalAchievements);
+
+            gameSummaries.add(dto);
+        }
+
+        // 🛠️ Construcción manual del UserProfileDto
+        UserProfileDto profileDto = new UserProfileDto();
+        profileDto.setId(user.getId());
+        profileDto.setUsername(user.getRealUserName());
+        profileDto.setEmail(user.getEmail());
+        profileDto.setImageUrl(user.getImageUrl());
+        profileDto.setSteamId(user.getSteamId());
+
+        // Asignar amigos (puedes mapear a un DTO si prefieres)
+        profileDto.setFriends(
+                user.getFriends().stream()
+                        .map(friend -> {
+                            FriendDto friendDto = new FriendDto();
+                            friendDto.setId(friend.getId());
+                            friendDto.setUsername(friend.getUsername());
+                            friendDto.setImageUrl(friend.getImageUrl());
+                            return friendDto;
+                        })
+                        .collect(Collectors.toList())
+        );
+
+        profileDto.setGames(gameSummaries);
+        profileDto.setTotalGames(gameSummaries.size());
+
+        return profileDto;
+    }
+
+
+
 }
