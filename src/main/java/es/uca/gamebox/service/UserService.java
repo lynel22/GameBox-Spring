@@ -171,7 +171,7 @@ public class UserService {
 
         for (GameUser gameUser : gameUsers) {
             Game game = gameUser.getGame();
-            Store store = game.getStores().stream().findFirst().orElse(null);
+            Store store = gameUser.getLibrary().getStore();
 
             int achievementsUnlocked = achievementUserRepository.countByGameUserId(gameUser.getId());
             int totalAchievements = game.getAchievements() != null ? game.getAchievements().size() : 0;
