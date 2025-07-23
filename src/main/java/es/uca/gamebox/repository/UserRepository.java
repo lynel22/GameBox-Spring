@@ -41,4 +41,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT u FROM User u WHERE u.id = :id")
     Optional<User> findByIdWithLibraries(@Param("id") UUID id);
 
+    boolean existsByFriendCode(String generatedCode);
+
+    Optional<User> findByFriendCode(String friendCode);
 }

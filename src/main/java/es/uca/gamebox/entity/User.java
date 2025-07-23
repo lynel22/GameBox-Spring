@@ -47,6 +47,8 @@ public class User implements UserDetails {
     private Boolean isAdmin;
     private String imageUrl;
 
+    @Column(unique = true)
+    private String friendCode;
 
     @Column(nullable = false)
     private boolean enabled = false;

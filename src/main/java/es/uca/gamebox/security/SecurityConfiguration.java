@@ -28,7 +28,6 @@ import java.util.List;
 @AllArgsConstructor
 public class SecurityConfiguration {
     private final JwtFilter jwtFilter;
-    private final UserDetailsService userDetailsService;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
@@ -62,6 +61,10 @@ public class SecurityConfiguration {
                         .requestMatchers(("/game/add-game-to-wishlist")).authenticated()
                         .requestMatchers("/game/remove-game-from-wishlist").authenticated()
                         .requestMatchers("/game/deals").authenticated()
+                        .requestMatchers("/user/friend-code").authenticated()
+                        .requestMatchers("/user/add-friend/{friendId}").authenticated()
+                        .requestMatchers("/user/search-by-friend-code/{code}").authenticated()
+                        .requestMatchers("/user/{userId}/friends").authenticated()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )

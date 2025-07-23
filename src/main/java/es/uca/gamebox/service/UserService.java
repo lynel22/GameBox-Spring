@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -218,5 +219,70 @@ public class UserService {
     }
 
 
+    public String getOrGenerateFriendCode(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (user.getFriendCode() == null) {
+            String generatedCode;
+            do {
+                generatedCode = String.valueOf(ThreadLocalRandom.current().nextLong(1000000000L, 9999999999L));
+            } while (userRepository.existsByFriendCode(generatedCode));
+
+            user.setFriendCode(generatedCode);
+            userRepository.save(user);
+        }
+
+        return user.getFriendCode();
+    }
+
+
+    public Optional<FriendDto> findFriendByCode(String code) {
+        return userRepository.findByFriendCode(code)
+                .map(user -> {
+                    FriendDto dto = new FriendDto();
+                    dto.setId(user.getId());
+                    dto.setUsername(user.getUsername());
+                    dto.setImageUrl(user.getImageUrl());
+                    return dto;
+                });
+    }
+
+    @Transactional
+    public void addFriend(UUID userId, UUID friendId) {
+        if (userId.equals(friendId)) {
+            throw new IllegalArgumentException("No puedes agregarte a ti mismo como amigo");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new EntityNotFoundException("Amigo no encontrado"));
+
+        // Añadir bidireccionalmente si aún no lo son
+        if (!user.getFriends().contains(friend)) {
+            user.getFriends().add(friend);
+        }
+        if (!friend.getFriends().contains(user)) {
+            friend.getFriends().add(user);
+        }
+
+        userRepository.save(user);
+        userRepository.save(friend);
+    }
+
+    public List<FriendDto> getFriendsOfUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario no encontrado"));
+
+        return user.getFriends().stream().map(friend -> {
+            FriendDto dto = new FriendDto();
+            dto.setId(friend.getId());
+            dto.setUsername(friend.getUsername());
+            dto.setImageUrl(friend.getImageUrl());
+            return dto;
+        }).toList();
+    }
 
 }

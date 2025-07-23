@@ -1,5 +1,6 @@
 package es.uca.gamebox.controller;
 
+import es.uca.gamebox.dto.FriendDto;
 import es.uca.gamebox.dto.UserDto;
 import es.uca.gamebox.dto.UserProfileDto;
 import es.uca.gamebox.entity.User;
@@ -19,6 +20,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -26,7 +28,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -225,6 +229,41 @@ public class UserController {
         return ResponseEntity.ok("Steam account unlinked successfully");
     }
 
+    @GetMapping("/friend-code")
+    public ResponseEntity<String> getFriendCode(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
+        }
+
+        User user = (User) authentication.getPrincipal();
+        String code = userService.getOrGenerateFriendCode(user.getId());
+        return ResponseEntity.ok(code);
+    }
+
+    @GetMapping("/search-by-friend-code/{code}")
+    public ResponseEntity<FriendDto> findByFriendCode(@PathVariable String code) {
+        return userService.findFriendByCode(code)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/add-friend/{friendId}")
+    public ResponseEntity<?> addFriend(Authentication authentication, @PathVariable UUID friendId) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
+        }
+
+        User user = (User) authentication.getPrincipal();
+        userService.addFriend(user.getId(), friendId);
+        return ResponseEntity.ok().build();
+    }
+
+
+    @GetMapping("/{userId}/friends")
+    public ResponseEntity<List<FriendDto>> getFriends(@PathVariable UUID userId) {
+        List<FriendDto> friends = userService.getFriendsOfUser(userId);
+        return ResponseEntity.ok(friends);
+    }
 
 
 }
