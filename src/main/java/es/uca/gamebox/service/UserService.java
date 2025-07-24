@@ -279,7 +279,7 @@ public class UserService {
         return user.getFriends().stream().map(friend -> {
             FriendDto dto = new FriendDto();
             dto.setId(friend.getId());
-            dto.setUsername(friend.getUsername());
+            dto.setUsername(friend.getRealUserName());
             dto.setImageUrl(friend.getImageUrl());
             return dto;
         }).toList();

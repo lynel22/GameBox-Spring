@@ -143,7 +143,16 @@ public class UserController {
     }
 
     @GetMapping("/profile")
-    public UserProfileDto getUserProfile(Authentication authentication) {
+    public UserProfileDto getUserProfile(
+            @RequestParam(value = "userId", required = false) UUID userId,
+            Authentication authentication) {
+        System.out.println("🔍 Obteniendo perfil de usuario...");
+        if (userId != null) {
+
+            System.out.println("🔍 userId recibido: " + userId);
+            return userService.getUserProfile(userId);
+        }
+
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new RuntimeException("Unauthorized");
         }
