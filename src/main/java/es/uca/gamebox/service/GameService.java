@@ -46,6 +46,9 @@ public class GameService {
     @Autowired
     DealRepository dealRepository;
 
+    @Autowired
+    GameReviewRepository gameReviewRepository;
+
     public List<GameDto> getLibrary(User currentUser) {
         List<Game> games = gameUserRepository.findGamesByUser(currentUser);
         return GameMapper.toDtoList(games);
@@ -84,6 +87,15 @@ public class GameService {
 
         boolean inWishlist = wishlistRepository.existsByUserAndGame(managedUser, game);
 
+        // Reviews
+        long positive = gameReviewRepository.countByGameAndRecommended(game, true);
+        long negative = gameReviewRepository.countByGameAndRecommended(game, false);
+        long total = positive + negative;
+        double percentage = total > 0 ? (positive * 100.0 / total) : 0.0;
+
+        Optional<GameReview> userReviewOpt = gameReviewRepository.findByUserAndGame(managedUser, game);
+        Boolean userReview = userReviewOpt.map(GameReview::isRecommended).orElse(null);
+        String summaryText = getReviewSummaryText(percentage);
 
         return GameMapper.toGameDetailDto(
                 game,
@@ -91,8 +103,14 @@ public class GameService {
                 unlockedAchievements,
                 friendsWithGame,
                 gameUser,
-                inWishlist
+                inWishlist,
+                (int) positive,
+                (int) negative,
+                percentage,
+                summaryText,
+                userReview
         );
+
 
     }
 
@@ -234,6 +252,40 @@ public class GameService {
                 ))
                 .toList();
 
+    }
+
+    @Transactional
+    public void reviewGame(User user, UUID gameId, boolean recommended) {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new IllegalArgumentException("Game not found"));
+
+        boolean hasGameInLibrary = gameUserRepository.existsByLibrary_UserAndGame(user, game);
+        if (!hasGameInLibrary) {
+            throw new IllegalStateException("Cannot review a game not in your library");
+        }
+
+        Optional<GameReview> existingReview = gameReviewRepository.findByUserAndGame(user, game);
+        if (existingReview.isPresent()) {
+            GameReview review = existingReview.get();
+            review.setRecommended(recommended);
+            gameReviewRepository.save(review);
+        } else {
+            GameReview review = new GameReview();
+            review.setUser(user);
+            review.setGame(game);
+            review.setRecommended(recommended);
+            gameReviewRepository.save(review);
+        }
+    }
+
+    private String getReviewSummaryText(double percentage) {
+        if (percentage >= 95) return "Extremadamente positivas";
+        else if (percentage >= 90) return "Muy positivas";
+        else if (percentage >= 80) return "Positivas";
+        else if (percentage >= 75) return "Mayoritariamente positivas";
+        else if (percentage >= 60) return "Opiniones mixtas";
+        else if (percentage > 0) return "Pocas recomendaciones";
+        else return "Sin valoraciones";
     }
 
 }

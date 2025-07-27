@@ -146,7 +146,6 @@ public class UserController {
     public UserProfileDto getUserProfile(
             @RequestParam(value = "userId", required = false) UUID userId,
             Authentication authentication) {
-        System.out.println("🔍 Obteniendo perfil de usuario...");
         if (userId != null) {
 
             System.out.println("🔍 userId recibido: " + userId);

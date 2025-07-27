@@ -40,4 +40,6 @@ public interface GameUserRepository extends JpaRepository<GameUser, UUID> {
     List<LibraryGameCountDto> countGamesGroupedByStore(@Param("user") User user);
 
     List<GameUser> findAllByLibraryUserIdAndGameId(UUID userId, UUID gameId);
+
+    boolean existsByLibrary_UserAndGame(User user, Game game);
 }

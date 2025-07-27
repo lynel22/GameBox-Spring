@@ -52,7 +52,12 @@ public class GameMapper {
             List<AchievementUser> unlockedAchievements,
             List<User> friendsWithGame,
             GameUser gameUser,
-            boolean inWishlist
+            boolean inWishlist,
+            int totalPositiveReviews,
+            int totalNegativeReviews,
+            double recommendationPercentage,
+            String reviewSummaryText,
+            Boolean userReview
     ) {
         GameDetailDto dto = new GameDetailDto();
 
@@ -134,6 +139,12 @@ public class GameMapper {
         }
 
         dto.setInWishlist(inWishlist);
+
+        dto.setTotalPositiveReviews(totalPositiveReviews);
+        dto.setTotalNegativeReviews(totalNegativeReviews);
+        dto.setRecommendationPercentage(recommendationPercentage);
+        dto.setReviewSummaryText(reviewSummaryText);
+        dto.setUserReview(userReview);
 
         // Deals
         dto.setDeals(game.getDeals().stream().map(deal -> new DealDto(

@@ -27,4 +27,10 @@ public class GameDetailDto {
     private boolean ownedByUser;
 
     private List<DealDto> deals;
+
+    private int totalPositiveReviews;
+    private int totalNegativeReviews;
+    private double recommendationPercentage;
+    private String reviewSummaryText;
+    private Boolean userReview;
 }

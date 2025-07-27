@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Slf4j
@@ -167,5 +168,19 @@ public class GameController {
         User user = (User) authentication.getPrincipal();
         return gameService.getDeals(user, store);
     }
+
+    @PostMapping("/review")
+    public void reviewGame(Authentication authentication,
+                           @RequestBody Map<String, Object> request) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to review game");
+            throw new RuntimeException("Unauthorized access");
+        }
+        User user = (User) authentication.getPrincipal();
+        UUID gameId = UUID.fromString(request.get("gameId").toString());
+        boolean recommended = Boolean.parseBoolean(request.get("recommended").toString());
+        gameService.reviewGame(user, gameId, recommended);
+    }
+
 
 }
