@@ -182,5 +182,16 @@ public class GameController {
         gameService.reviewGame(user, gameId, recommended);
     }
 
+    @GetMapping("/recommendations")
+    public ResponseEntity<List<WeeklyRecommendationDto>> getRecommendationsForUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            log.warn("Unauthorized access attempt to weekly recommendations");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User currentUser = (User) authentication.getPrincipal();
+        List<WeeklyRecommendationDto> recommendations = gameService.getWeeklyRecommendationsForUser(currentUser);
+        return ResponseEntity.ok(recommendations);
+    }
 
 }

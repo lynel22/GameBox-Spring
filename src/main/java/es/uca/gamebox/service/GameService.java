@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -48,6 +49,9 @@ public class GameService {
 
     @Autowired
     GameReviewRepository gameReviewRepository;
+
+    @Autowired
+    RecommendationRepository recommendationRepository;
 
     public List<GameDto> getLibrary(User currentUser) {
         List<Game> games = gameUserRepository.findGamesByUser(currentUser);
@@ -286,6 +290,49 @@ public class GameService {
         else if (percentage >= 60) return "Opiniones mixtas";
         else if (percentage > 0) return "Pocas recomendaciones";
         else return "Sin valoraciones";
+    }
+
+    public List<WeeklyRecommendationDto> getWeeklyRecommendationsForUser(User user) {
+        LocalDate today = LocalDate.now();
+        return recommendationRepository.findByUserAndRecommendationDate(user, today).stream()
+                .map(rec -> {
+                    Game game = rec.getGame();
+
+                    WeeklyRecommendationDto dto = new WeeklyRecommendationDto();
+                    dto.setGameId(game.getId());
+                    dto.setTitle(game.getName());
+                    dto.setImageUrl(game.getImageUrl());
+                    dto.setReleaseDate(game.getReleaseDate());
+
+                    // Género por el que se recomienda
+                    GenreDto reasonGenre = new GenreDto();
+                    reasonGenre.setId(rec.getGenre().getId());
+                    reasonGenre.setName(rec.getGenre().getName());
+                    reasonGenre.setSpanishName(rec.getGenre().getSpanishName());
+                    dto.setGenreRecommendedBy(reasonGenre);
+
+                    // Géneros del juego
+                    List<GenreDto> genreDtos = game.getGenres().stream().map(g -> {
+                        GenreDto gd = new GenreDto();
+                        gd.setId(g.getId());
+                        gd.setName(g.getName());
+                        gd.setSpanishName(g.getSpanishName());
+                        return gd;
+                    }).toList();
+                    dto.setGenres(genreDtos);
+
+                    // Stores
+                    List<StoreDto> storeDtos = game.getStores().stream().map(store -> {
+                        StoreDto sd = new StoreDto();
+                        sd.setId(store.getId());
+                        sd.setName(store.getName());
+                        sd.setImageUrl(store.getImageUrl());
+                        return sd;
+                    }).toList();
+                    dto.setStores(storeDtos);
+
+                    return dto;
+                }).toList();
     }
 
 }

@@ -66,6 +66,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/user/search-by-friend-code/{code}").authenticated()
                         .requestMatchers("/user/{userId}/friends").authenticated()
                         .requestMatchers("/game/review").authenticated()
+                        .requestMatchers("/game/recommendations").authenticated()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )

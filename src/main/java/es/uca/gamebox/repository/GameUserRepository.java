@@ -42,4 +42,7 @@ public interface GameUserRepository extends JpaRepository<GameUser, UUID> {
     List<GameUser> findAllByLibraryUserIdAndGameId(UUID userId, UUID gameId);
 
     boolean existsByLibrary_UserAndGame(User user, Game game);
+
+    List<GameUser> findByLibrary_User(User user);
+
 }
