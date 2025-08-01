@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface RecommendationRepository extends JpaRepository<Recommendation, UUID> {
     List<Recommendation> findByUserAndRecommendationDate(User user, LocalDate date);
     void deleteByRecommendationDate(LocalDate date);
+    void deleteAllByUser(User testUser);
 }

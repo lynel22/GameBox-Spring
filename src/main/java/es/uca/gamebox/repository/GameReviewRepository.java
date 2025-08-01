@@ -19,4 +19,5 @@ public interface GameReviewRepository extends JpaRepository<GameReview, UUID> {
     @Query("SELECT gr.game.id AS gameId, COUNT(gr) AS positiveCount " +
             "FROM GameReview gr WHERE gr.recommended = true GROUP BY gr.game.id")
     List<Map<String, Object>> findGameRecommendationCounts();
+    void deleteAllByUser(User testUser);
 }

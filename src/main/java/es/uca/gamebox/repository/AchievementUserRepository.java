@@ -14,4 +14,7 @@ public interface AchievementUserRepository extends JpaRepository<AchievementUser
     void deleteByGameUserIn(List<GameUser> syncedGameUsers);
     List<AchievementUser> findAllByGameUser_GameAndUser(Game game, User user);
     int countByGameUserId(UUID gameUserId);
+    void deleteAllByUser(User testUser);
+
+    List<AchievementUser> findAllByUserId(UUID id);
 }

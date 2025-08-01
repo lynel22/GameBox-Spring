@@ -32,7 +32,7 @@ public class RecommendationService {
     private final RecommendationRepository recommendationRepository;
 
     @Transactional
-    @Scheduled(cron = "0 0 0 * * MON")
+    @Scheduled(cron = "0 32 20 * * *")
     public void generateWeeklyRecommendations() {
         LocalDate today = LocalDate.now();
 

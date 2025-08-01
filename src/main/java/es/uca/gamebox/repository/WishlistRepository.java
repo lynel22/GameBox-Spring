@@ -14,4 +14,7 @@ public interface WishlistRepository extends JpaRepository<Wishlist, UUID> {
     boolean existsByUserAndGame(User user, Game game);
 
     List<Wishlist> findByUser(User user);
+    void deleteAllByUser(User testUser);
+
+    long countByUser(User testUser);
 }

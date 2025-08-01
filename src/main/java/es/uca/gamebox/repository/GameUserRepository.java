@@ -45,4 +45,5 @@ public interface GameUserRepository extends JpaRepository<GameUser, UUID> {
 
     List<GameUser> findByLibrary_User(User user);
 
+    void deleteAllByLibrary_User(User testUser);
 }
