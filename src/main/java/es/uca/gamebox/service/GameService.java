@@ -220,11 +220,11 @@ public class GameService {
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new RuntimeException("Game not found"));
 
-        Wishlist wishlist = wishlistRepository.findByUserAndGame(user, game)
-                .orElseThrow(() -> new RuntimeException("Game not found in wishlist"));
-
-        wishlistRepository.delete(wishlist);
+        wishlistRepository.findByUserAndGame(user, game)
+                .ifPresent(wishlistRepository::delete);
     }
+
+
 
     public List<GameWishlistDto> getUserWishlist(User user) {
         List<Wishlist> wishlistEntries = wishlistRepository.findByUser(user);
