@@ -228,7 +228,7 @@ public class UserService {
             SecureRandom secureRandom = new SecureRandom();
             String generatedCode;
             do {
-                long code = 1000000000L + Math.abs(secureRandom.nextLong()) % 9000000000L;
+                long code = secureRandom.nextLong(1000000000L, 10000000000L);
                 generatedCode = String.valueOf(code);
             } while (userRepository.existsByFriendCode(generatedCode));
 
@@ -238,6 +238,7 @@ public class UserService {
 
         return user.getFriendCode();
     }
+
 
 
     public Optional<FriendDto> findFriendByCode(String code) {
