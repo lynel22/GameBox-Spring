@@ -21,14 +21,14 @@ public class SyncPageTracker {
                 return Integer.parseInt(content);
             }
         } catch (IOException | NumberFormatException ignored) {}
-        return 1; // Página por defecto si no existe o está corrupto
+        return 1;
     }
 
     public void saveLastSyncedPage(int page) {
         try {
             Files.writeString(Paths.get(FILE_PATH), String.valueOf(page));
         } catch (IOException e) {
-            e.printStackTrace(); // Puedes usar Logger si quieres
+            throw new RuntimeException("Error saving last synced page", e);
         }
     }
 }

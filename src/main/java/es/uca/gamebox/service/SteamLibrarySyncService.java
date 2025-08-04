@@ -104,7 +104,7 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
             appIdToGameMap.put(game.getSteamAppId(), game);
         }
 
-        int delayIndex = 0; // Contador de delay por juego
+        int delayIndex = 0;
 
         for (SteamOwnedGamesResponseDto.Game steamGame : steamGames) {
             Game game = appIdToGameMap.get(String.valueOf(steamGame.getAppid()));
@@ -139,7 +139,6 @@ public class SteamLibrarySyncService implements GameLibrarySyncService{
                         syncUserAchievementsForGame(finalGame, finalGu, steamId);
                     } catch (Exception e) {
                         System.err.println("Error sincronizando logros para el juego " + finalGame.getName());
-                        e.printStackTrace();
                     }
                 }, delaySeconds, TimeUnit.SECONDS);
             }

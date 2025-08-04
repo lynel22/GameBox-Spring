@@ -57,11 +57,9 @@ public class UserController {
             userService.createUser(username, password, email, avatar);
             return ResponseEntity.ok("User created successfully");
         } catch (ApiException e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
         catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
@@ -104,7 +102,6 @@ public class UserController {
             log.warn("Login failed: bad credentials");
             return ResponseEntity.status(401).body("Correo o contraseña incorrectos.");
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("ERROR EN EL LOGIN", e);
             return ResponseEntity.status(500).body("Ha ocurrido un error inesperado.");
         }
@@ -117,10 +114,8 @@ public class UserController {
             userService.forgotPassword(email);
             return ResponseEntity.ok("Password reset email sent successfully");
         } catch (ApiException e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
 
@@ -134,10 +129,8 @@ public class UserController {
             userService.resetPassword(token, password);
             return ResponseEntity.ok("Password reset successfully");
         } catch (ApiException e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
     }
@@ -175,11 +168,9 @@ public class UserController {
             userService.updateUser(user, username, password, email, avatar);
             return ResponseEntity.ok("User created successfully");
         } catch (ApiException e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
         catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
         }
 
