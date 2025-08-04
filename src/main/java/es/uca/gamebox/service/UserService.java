@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -224,9 +225,11 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (user.getFriendCode() == null) {
+            SecureRandom secureRandom = new SecureRandom();
             String generatedCode;
             do {
-                generatedCode = String.valueOf(ThreadLocalRandom.current().nextLong(1000000000L, 9999999999L));
+                long code = 1000000000L + Math.abs(secureRandom.nextLong()) % 9000000000L;
+                generatedCode = String.valueOf(code);
             } while (userRepository.existsByFriendCode(generatedCode));
 
             user.setFriendCode(generatedCode);
