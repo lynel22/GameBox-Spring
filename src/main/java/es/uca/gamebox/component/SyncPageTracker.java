@@ -1,5 +1,6 @@
 package es.uca.gamebox.component;
 
+import es.uca.gamebox.exception.ApiException;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class SyncPageTracker {
         try {
             Files.writeString(Paths.get(FILE_PATH), String.valueOf(page));
         } catch (IOException e) {
-            throw new RuntimeException("Error saving last synced page", e);
+            throw new ApiException("Error saving last synced page");
         }
     }
 }
