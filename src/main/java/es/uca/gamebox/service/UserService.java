@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -94,9 +95,10 @@ public class UserService {
     }
 
     private void storeImg(User user, MultipartFile avatar) {
-        String fileName = UUID.randomUUID() + "_" + avatar.getOriginalFilename();
-        Path uploadPath = Paths.get("uploads", "avatars");
+        String safeUsername = user.getUsername().replaceAll("[^a-zA-Z0-9_-]", "_");
+        String fileName = "profilepic_" + safeUsername + ".png";
 
+        Path uploadPath = Paths.get("uploads", "avatars");
         try {
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
@@ -104,11 +106,11 @@ public class UserService {
 
             Path filePath = uploadPath.resolve(fileName);
             Files.copy(avatar.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            user.setImageUrl("/uploads/avatars/" + fileName); // Ruta accesible públicamente
-        } catch (Exception e) {
-            throw new ApiException("Error al guardar el avatar: " + e.getMessage());
+        } catch (IOException e) {
+            throw new ApiException("Error al guardar la imagen de perfil");
         }
     }
+
 
     public void verifyAccount(String token) {
         User user = userRepository.findByVerificationToken(token).orElseThrow(() -> new RuntimeException("Invalid token"));
@@ -219,7 +221,6 @@ public class UserService {
         return profileDto;
     }
 
-
     public String getOrGenerateFriendCode(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -238,8 +239,6 @@ public class UserService {
 
         return user.getFriendCode();
     }
-
-
 
     public Optional<FriendDto> findFriendByCode(String code) {
         return userRepository.findByFriendCode(code)
