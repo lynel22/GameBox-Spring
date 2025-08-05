@@ -22,7 +22,7 @@ public class SteamAchievementImportService {
     private final GameRepository gameRepository;
     private final AchievementRepository achievementRepository;
 
-   /*@PostConstruct*/
+    /*@PostConstruct*/
     public void init() {
         new Thread(this::importSteamAchievementsForAllGames).start();
     }
@@ -33,45 +33,54 @@ public class SteamAchievementImportService {
 
         for (Game game : games) {
             try {
-                System.out.println("Syncing achievements for game: " + game.getName() + "from Steam");
-                Long appId = Long.valueOf(game.getSteamAppId());
-                List<SteamGameSchemaResponseDto.Achievement> achievements = steamApiClient.getAllAchievementsForGame(appId);
-
-                if (achievements == null || achievements.isEmpty()) {
-                    System.out.println("No achievements found for game: " + game.getName());
-                    game.setSteamAchievementsSynced(true);
-                    gameRepository.save(game);
-                    continue;
-                }
-
-                for (SteamGameSchemaResponseDto.Achievement a : achievements) {
-                    if (!achievementRepository.existsByGameAndName(game, a.getDisplayName())) {
-                        System.out.println("Adding achievement: " + a.getDisplayName() + " for game: " + game.getName());
-                        Achievement newAchievement = new Achievement();
-                        newAchievement.setGame(game);
-                        newAchievement.setName(a.getDisplayName());
-                        newAchievement.setDescription(
-                                a.getDescription() != null ? a.getDescription() : "No description"
-                        );
-                        newAchievement.setImageUrl(a.getIcon()); // Usa icongray si prefieres el icono gris
-                        achievementRepository.save(newAchievement);
-                    }
-                }
-
-                game.setSteamAchievementsSynced(true);
-                gameRepository.save(game);
-
-                // Esperar 1 segundo entre juegos
-                Thread.sleep(1000);
-
+                processGameAchievements(game);
+                Thread.sleep(1000); // Espera entre juegos
             } catch (Exception e) {
-                if (e instanceof InterruptedException) {
-                    Thread.currentThread().interrupt();
-                }
-                System.err.println("Error syncing achievements for game " + game.getName() + ": " + e.getMessage());
+                handleException(e, game);
             }
         }
     }
+
+    private void processGameAchievements(Game game) {
+        System.out.println("Syncing achievements for game: " + game.getName() + " from Steam");
+        Long appId = Long.valueOf(game.getSteamAppId());
+        List<SteamGameSchemaResponseDto.Achievement> achievements = steamApiClient.getAllAchievementsForGame(appId);
+
+        if (achievements == null || achievements.isEmpty()) {
+            System.out.println("No achievements found for game: " + game.getName());
+            markGameAsSynced(game);
+            return;
+        }
+
+        saveNewAchievements(game, achievements);
+        markGameAsSynced(game);
+    }
+
+    private void saveNewAchievements(Game game, List<SteamGameSchemaResponseDto.Achievement> achievements) {
+        for (SteamGameSchemaResponseDto.Achievement a : achievements) {
+            if (!achievementRepository.existsByGameAndName(game, a.getDisplayName())) {
+                System.out.println("Adding achievement: " + a.getDisplayName() + " for game: " + game.getName());
+                Achievement newAchievement = new Achievement();
+                newAchievement.setGame(game);
+                newAchievement.setName(a.getDisplayName());
+                newAchievement.setDescription(
+                        a.getDescription() != null ? a.getDescription() : "No description"
+                );
+                newAchievement.setImageUrl(a.getIcon()); // Usa icongray si prefieres el icono gris
+                achievementRepository.save(newAchievement);
+            }
+        }
+    }
+
+    private void markGameAsSynced(Game game) {
+        game.setSteamAchievementsSynced(true);
+        gameRepository.save(game);
+    }
+
+    private void handleException(Exception e, Game game) {
+        if (e instanceof InterruptedException) {
+            Thread.currentThread().interrupt();
+        }
+        System.err.println("Error syncing achievements for game " + game.getName() + ": " + e.getMessage());
+    }
 }
-
-
