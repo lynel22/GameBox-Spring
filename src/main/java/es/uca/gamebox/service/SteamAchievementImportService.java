@@ -65,6 +65,9 @@ public class SteamAchievementImportService {
                 Thread.sleep(1000);
 
             } catch (Exception e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
                 System.err.println("Error syncing achievements for game " + game.getName() + ": " + e.getMessage());
             }
         }
