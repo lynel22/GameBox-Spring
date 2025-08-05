@@ -112,6 +112,7 @@ public class User implements UserDetails {
 
     @JsonIgnore
     @Override
+    @SuppressWarnings("java:S1185")
     public String getUsername() {
         return this.email;
     }
