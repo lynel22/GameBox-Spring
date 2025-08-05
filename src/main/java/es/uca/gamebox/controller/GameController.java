@@ -21,7 +21,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping(path = {"/game"})
 public class GameController {
-    @Autowired
+
     private final GameService gameService;
 
     @GetMapping("/library")

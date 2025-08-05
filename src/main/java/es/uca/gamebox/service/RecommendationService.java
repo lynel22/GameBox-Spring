@@ -3,7 +3,6 @@ package es.uca.gamebox.service;
 import es.uca.gamebox.entity.*;
 import es.uca.gamebox.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,20 +14,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class RecommendationService {
-
-    @Autowired
     private final UserRepository userRepository;
-
-    @Autowired
     private final GameUserRepository gameUserRepository;
-
-    @Autowired
     private final GameRepository gameRepository;
-
-    @Autowired
     private final GameReviewRepository gameReviewRepository;
-
-    @Autowired
     private final RecommendationRepository recommendationRepository;
 
     @Transactional
