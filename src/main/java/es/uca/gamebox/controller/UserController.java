@@ -48,7 +48,7 @@ public class UserController {
     LibrarySyncManager librarySyncManager;
 
     @PostMapping("/register")
-    public ResponseEntity<?> saveUser(
+    public ResponseEntity<String> saveUser(
             @RequestParam("username") String username,
             @RequestParam("email") String email,
             @RequestParam("password") String password,
@@ -65,7 +65,7 @@ public class UserController {
     }
 
     @GetMapping("/verify/account")
-    public ResponseEntity<?> verifyAccount(@RequestParam("token") String token) {
+    public ResponseEntity<String> verifyAccount(@RequestParam("token") String token) {
         System.out.println("Token recibido: " + token);
         userService.verifyAccount(token);
         return ResponseEntity.ok("Account verified successfully");
@@ -109,7 +109,7 @@ public class UserController {
     }
 
     @PostMapping("/verify/password")
-    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
+    public ResponseEntity<String> forgotPassword(@RequestParam("email") String email) {
         try {
             userService.forgotPassword(email);
             return ResponseEntity.ok("Password reset email sent successfully");
@@ -122,7 +122,7 @@ public class UserController {
     }
 
     @PostMapping("/verify/password/submit")
-    public ResponseEntity<?> resetPassword(@RequestParam("token") String token,
+    public ResponseEntity<String> resetPassword(@RequestParam("token") String token,
                                            @RequestParam("password") String password)
     {
         try {
@@ -156,7 +156,7 @@ public class UserController {
 
 
     @PostMapping("profile/update")
-    public ResponseEntity<?> updateProfile(
+    public ResponseEntity<String> updateProfile(
             Authentication authentication,
             @RequestParam("username") String username,
             @RequestParam("email") String email,
@@ -178,7 +178,7 @@ public class UserController {
     }
 
     @PostMapping("/auth/steam/verify")
-    public ResponseEntity<?> verifySteamLogin(
+    public ResponseEntity<String> verifySteamLogin(
             @RequestBody Map<String, String> formParams,
             Authentication authentication
     ) {
@@ -216,7 +216,7 @@ public class UserController {
     }
 
     @PutMapping("/auth/steam/unlink")
-    public ResponseEntity<?> unlinkSteamAccount(Authentication authentication) {
+    public ResponseEntity<String> unlinkSteamAccount(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
         }
@@ -247,7 +247,7 @@ public class UserController {
     }
 
     @PostMapping("/add-friend/{friendId}")
-    public ResponseEntity<?> addFriend(Authentication authentication, @PathVariable UUID friendId) {
+    public ResponseEntity<String> addFriend(Authentication authentication, @PathVariable UUID friendId) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("No autorizado");
         }

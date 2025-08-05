@@ -64,7 +64,7 @@ public class GameController {
     }
 
     @PostMapping("/add-achievement")
-    public ResponseEntity<?> addAchievement(Authentication authentication, @RequestParam UUID gameId, @RequestParam UUID achievementId) {
+    public ResponseEntity<String> addAchievement(Authentication authentication, @RequestParam UUID gameId, @RequestParam UUID achievementId) {
         if (authentication == null || !authentication.isAuthenticated()) {
             log.warn("Unauthorized access attempt to add achievement");
             throw new RuntimeException("Unauthorized access");
@@ -87,7 +87,7 @@ public class GameController {
     }
 
     @PostMapping("/add-game-to-libraries")
-    public ResponseEntity<?> addGameToLibraries(
+    public ResponseEntity<String> addGameToLibraries(
             Authentication authentication,
             @RequestParam UUID gameId,
             @RequestBody StoreIdsRequest request
@@ -117,7 +117,7 @@ public class GameController {
     }
 
     @PostMapping("/add-game-to-wishlist")
-    public ResponseEntity<?> addGameToWishlist(
+    public ResponseEntity<String> addGameToWishlist(
             Authentication authentication,
             @RequestParam UUID gameId
     ) {
@@ -132,7 +132,7 @@ public class GameController {
     }
 
     @DeleteMapping("/remove-game-from-wishlist")
-    public ResponseEntity<?> removeGameFromWishlist(
+    public ResponseEntity<String> removeGameFromWishlist(
             Authentication authentication,
             @RequestParam UUID gameId
     ) {
