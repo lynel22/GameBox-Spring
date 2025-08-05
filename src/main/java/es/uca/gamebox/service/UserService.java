@@ -35,13 +35,8 @@ import java.util.stream.Stream;
 public class UserService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
+    private final UserRepository userRepository;
     private final AchievementUserRepository achievementUserRepository;
-    @Autowired
-    private final AchievementRepository achievementRepository;
 
     public void createUser(String username, String password, String email, MultipartFile avatar) {
         Optional<User> existingUser = userRepository.findByEmail(email);

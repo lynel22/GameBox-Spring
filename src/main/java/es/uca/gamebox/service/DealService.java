@@ -35,11 +35,10 @@ public class DealService {
         Instant now = Instant.now();
 
         for (CheapSharkDealDto dto : fetchedDeals) {
-            // Asignar Game por título si existe
             Optional<Game> gameOpt = gameRepository.findByNameIgnoreCase(dto.getTitle());
             if (gameOpt.isEmpty()) {
                 System.out.println("No se encontró juego para oferta: " + dto.getTitle());
-                continue; // saltamos si no hay juego
+                continue;
             }
 
             Deal deal = dealRepository.findByCheapSharkID(dto.getDealID()).orElseGet(() -> {
@@ -56,10 +55,8 @@ public class DealService {
             deal.setSalePrice(new BigDecimal(dto.getSalePrice()));
             deal.setSavings(new BigDecimal(dto.getSavings()));
             deal.setLastSeen(now);
-            // Obtener y asignar el link de la oferta
             try {
-                // Espaciar para evitar error 429
-                Thread.sleep(300); // 300 ms por oferta = máx. 3.3 requests/seg
+                Thread.sleep(300);
                 String dealUrl = cheapSharkApiClient.getDealLink(dto.getDealID());
                 deal.setDealUrl(dealUrl);
             } catch (InterruptedException e) {
@@ -67,10 +64,8 @@ public class DealService {
                 System.err.println("Thread interrumpido al esperar para evitar 429.");
             }
 
-
             deal.setGame(gameOpt.get());
 
-            // Asignar Store si existe
             Optional<Store> storeOpt = storeRepository.findByCheapSharkStoreId(dto.getStoreID());
             storeOpt.ifPresent(deal::setStore);
 
@@ -79,7 +74,6 @@ public class DealService {
             System.out.println("Oferta guardada: " + deal.getGame().getName() + " - " + deal.getSalePrice() + " en " + (deal.getStore() != null ? deal.getStore().getName() : "Desconocido"));
         }
 
-        // Marcar como caducadas las que no han sido vistas hoy
         Instant threshold = now.minusSeconds(60 * 60 * 24);
         List<Deal> expired = dealRepository.findAllByLastSeenBeforeAndEndDateIsNull(threshold);
         for (Deal d : expired) {

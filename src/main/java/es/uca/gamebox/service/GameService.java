@@ -6,6 +6,7 @@ import es.uca.gamebox.entity.*;
 import es.uca.gamebox.mapper.GameMapper;
 import es.uca.gamebox.repository.*;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,40 +19,20 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class GameService {
 
-    @Autowired
-    GameUserRepository gameUserRepository;
-
-    @Autowired
-    GameRepository gameRepository;
-
-    @Autowired
-    AchievementRepository achievementRepository;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    AchievementUserRepository achievementUserRepository;
-
-    @Autowired
-    LibraryRepository libraryRepository;
-
-    @Autowired
-    StoreRepository storeRepository;
-
-    @Autowired
-    WishlistRepository wishlistRepository;
-
-    @Autowired
-    DealRepository dealRepository;
-
-    @Autowired
-    GameReviewRepository gameReviewRepository;
-
-    @Autowired
-    RecommendationRepository recommendationRepository;
+    private final GameUserRepository gameUserRepository;
+    private final GameRepository gameRepository;
+    private final AchievementRepository achievementRepository;
+    private final UserRepository userRepository;
+    private final AchievementUserRepository achievementUserRepository;
+    private final LibraryRepository libraryRepository;
+    private final StoreRepository storeRepository;
+    private final WishlistRepository wishlistRepository;
+    private final DealRepository dealRepository;
+    private final GameReviewRepository gameReviewRepository;
+    private final RecommendationRepository recommendationRepository;
 
     public List<GameDto> getLibrary(User currentUser) {
         List<Game> games = gameUserRepository.findGamesByUser(currentUser);

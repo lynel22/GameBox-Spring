@@ -34,7 +34,7 @@ public class SteamAchievementImportService {
         for (Game game : games) {
             try {
                 processGameAchievements(game);
-                Thread.sleep(1000); // Espera entre juegos
+                Thread.sleep(1000);
             } catch (Exception e) {
                 handleException(e, game);
             }
@@ -66,7 +66,7 @@ public class SteamAchievementImportService {
                 newAchievement.setDescription(
                         a.getDescription() != null ? a.getDescription() : "No description"
                 );
-                newAchievement.setImageUrl(a.getIcon()); // Usa icongray si prefieres el icono gris
+                newAchievement.setImageUrl(a.getIcon());
                 achievementRepository.save(newAchievement);
             }
         }

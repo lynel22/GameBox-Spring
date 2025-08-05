@@ -38,14 +38,10 @@ import java.util.UUID;
 @RequestMapping(path = {"/user"})
 public class UserController {
     private final UserService userService;
-    @Autowired
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-
-    @Autowired
     private final SteamLibrarySyncService steamLibrarySyncService;
-    @Autowired
-    LibrarySyncManager librarySyncManager;
+    private final LibrarySyncManager librarySyncManager;
 
     @PostMapping("/register")
     public ResponseEntity<String> saveUser(

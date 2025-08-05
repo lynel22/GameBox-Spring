@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class AuthenticatedUserService {
-
-    @Autowired
     private UserRepository userRepository;
 
     public User getAuthenticatedUser() {
