@@ -6,6 +6,7 @@ import es.uca.gamebox.dto.steam.SteamPlayerAchievementDto;
 import es.uca.gamebox.entity.*;
 import es.uca.gamebox.repository.*;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -21,35 +22,22 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class SteamLibrarySyncService implements GameLibrarySyncService{
-    @Autowired
-    private GameRepository gameRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private GameUserRepository gameUserRepository;
-
-    @Autowired
-    private LibraryRepository libraryRepository;
-
-    @Autowired
-    private StoreRepository storeRepository;
-
-    @Autowired
-    private AchievementUserRepository achievementUserRepository;
-
-    @Autowired
-    private AchievementRepository achievementRepository;
+    private final GameRepository gameRepository;
+    private final UserRepository userRepository;
+    private final GameUserRepository gameUserRepository;
+    private final LibraryRepository libraryRepository;
+    private final StoreRepository storeRepository;
+    private final AchievementUserRepository achievementUserRepository;
+    private final AchievementRepository achievementRepository;
 
     @Override
     public String getPlatform() {
         return "steam";
     }
 
-    @Autowired
-    private SteamApiClient steamApiClient;
+    private final SteamApiClient steamApiClient;
 
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
 
