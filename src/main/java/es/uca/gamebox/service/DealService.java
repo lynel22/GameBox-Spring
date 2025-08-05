@@ -74,7 +74,7 @@ public class DealService {
             System.out.println("Oferta guardada: " + deal.getGame().getName() + " - " + deal.getSalePrice() + " en " + (deal.getStore() != null ? deal.getStore().getName() : "Desconocido"));
         }
 
-        Instant threshold = now.minusSeconds(60 * 60 * 24);
+        Instant threshold = now.minusSeconds(60L * 60 * 24);
         List<Deal> expired = dealRepository.findAllByLastSeenBeforeAndEndDateIsNull(threshold);
         for (Deal d : expired) {
             d.setEndDate(d.getLastSeen());
